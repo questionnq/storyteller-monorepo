@@ -1,5 +1,5 @@
 import google.generativeai as genai
-from config import GEMINI_API_KEY
+from backend.app.config import GEMINI_API_KEY
 import re
 import json
 
@@ -24,7 +24,7 @@ async def generate_script(promt: str | None, style: str | None, time: float | No
                 "dialogue": "Диалог или текст для сцены"
             }},
             {{
-                "scene_number": 1,
+                "scene_number": 2,
                 "description": "Описание сцены",
                 "dialogue": "Диалог или текст для сцены"
             }}

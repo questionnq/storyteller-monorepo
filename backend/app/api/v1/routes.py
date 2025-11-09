@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from service.script_service import generate_script
+from backend.app.service.script_service import generate_script
 from .shemas import ScriptRequest
 
 router = APIRouter(prefix = "/api/v1")
