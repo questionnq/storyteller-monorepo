@@ -1,7 +1,0 @@
-name = "storyteller-backend"
-main = "main.py"
-compatibility_date = "2025-11-09"
-compatibility_flags = ["python_workers"]   # <-- ВАЖНО
-
-[vars]
-PYTHON_VERSION = "3.12"
