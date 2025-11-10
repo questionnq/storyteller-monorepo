@@ -2,12 +2,9 @@
 export default defineNuxtRouteMiddleware((to) => {
   const user = useSupabaseUser()
   
-  // Публичные страницы - без авторизации
+  // Публичные страницы (доступны без авторизации)
   const publicPages = ['/', '/login', '/register']
   
-  console.log('🔍 Middleware:', to.path, 'User:', user.value)
-  
-  // Если страница публичная - пропускаем
   if (publicPages.includes(to.path)) {
     return
   }

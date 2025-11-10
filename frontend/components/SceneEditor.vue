@@ -1,75 +1,106 @@
 <template>
-  <div class="bg-base-200 rounded-lg p-4 shadow-lg">
+  <div class="bg-base-200 rounded-xl p-6 shadow-lg border-l-4 border-primary">
     <div class="flex justify-between items-start mb-4">
-      <h3 class="text-lg font-bold">
-        Сцена {{ scene.scene_number }}
-        <span class="text-sm font-normal opacity-70">({{ scene.duration }} сек)</span>
-      </h3>
-      <button class="btn btn-ghost btn-sm" @click="$emit('delete')">✕</button>
-    </div>
-
-    <div class="form-control mb-4">
-      <label class="label">
-        <span class="label-text">Описание действия</span>
-      </label>
-      <textarea 
-        v-model="localScene.action"
-        class="textarea textarea-bordered h-24"
-        placeholder="Что происходит в сцене?"
-        @blur="saveChanges"
-      ></textarea>
-    </div>
-
-    <div class="form-control mb-4" v-if="localScene.dialogues">
-      <label class="label">
-        <span class="label-text">Диалоги</span>
-      </label>
-      <div v-for="(dialogue, index) in localScene.dialogues" :key="index" class="flex gap-2 mb-2">
-        <input 
-          v-model="localScene.dialogues[index]"
-          class="input input-bordered flex-1"
-          placeholder="Реплика персонажа"
-          @blur="saveChanges"
-        />
-        <button class="btn btn-ghost btn-sm" @click="removeDialogue(index)">✕</button>
+      <div class="flex items-center gap-3">
+        <div class="bg-primary text-primary-content rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
+          {{ scene.scene_number }}
+        </div>
+        <div>
+          <h3 class="font-bold text-lg">Сцена {{ scene.scene_number }}</h3>
+        </div>
       </div>
-      <button class="btn btn-outline btn-sm mt-2" @click="addDialogue">
-        + Добавить реплику
+      <button class="btn btn-ghost btn-sm btn-circle" @click="$emit('delete')">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
       </button>
     </div>
 
-    <div class="form-control mb-4">
-      <label class="label">
-        <span class="label-text">За кадром (voiceover)</span>
-      </label>
+    <!-- БЛОК: Описание действия -->
+    <div class="mb-5">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">🎬</span>
+        <label class="label-text font-bold text-base">Описание действия</label>
+      </div>
       <textarea 
-        v-model="localScene.voiceover"
-        class="textarea textarea-bordered h-16"
-        placeholder="Текст за кадром"
-        @blur="saveChanges"
+        v-model="localScene.action"
+        class="textarea textarea-bordered w-full min-h-[100px] text-sm"
+        placeholder="Что происходит на экране? Подробно опишите действия, выражения, движения..."
+        @input="debounceSave"
       ></textarea>
     </div>
 
-    <div class="form-control mb-4">
-      <label class="label">
-        <span class="label-text">Примечания</span>
-      </label>
+    <!-- БЛОК: Диалоги -->
+    <div class="mb-5" v-if="localScene.dialogue !== undefined">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">💬</span>
+        <label class="label-text font-bold text-base">Диалоги персонажей</label>
+      </div>
       <textarea 
-        v-model="localScene.notes"
-        class="textarea textarea-bordered h-16"
-        placeholder="Технические примечания"
-        @blur="saveChanges"
+        v-model="localScene.dialogue"
+        class="textarea textarea-bordered w-full min-h-[60px] text-sm"
+        placeholder="Реплики персонажей..."
+        @input="debounceSave"
       ></textarea>
     </div>
 
-    <div class="flex gap-2 mt-6">
+    <!-- БЛОК: Текст за кадром (VOICEOVER) -->
+    <div class="mb-5" v-if="localScene.voice_over !== undefined">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">🎙️</span>
+        <label class="label-text font-bold text-base">Текст за кадром (Voiceover)</label>
+      </div>
+      <textarea 
+        v-model="localScene.voice_over"
+        class="textarea textarea-bordered w-full min-h-[80px] text-sm font-mono bg-base-300"
+        placeholder="Текст, который будет озвучен поверх видео..."
+        @input="debounceSave"
+      ></textarea>
+    </div>
+
+    <!-- БЛОК: Визуальный промпт -->
+    <div class="mb-5" v-if="localScene.visual_prompt !== undefined">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">🎨</span>
+        <label class="label-text font-bold text-base">Визуальный промпт</label>
+      </div>
+      <textarea 
+        v-model="localScene.visual_prompt"
+        class="textarea textarea-bordered w-full min-h-[60px] text-xs opacity-80"
+        placeholder="Детальное описание кадра для ИИ-художника (150-200 символов, на английском)..."
+        @input="debounceSave"
+      ></textarea>
+    </div>
+
+    <!-- БЛОК для уточняющего промпта при перегенерации -->
+    <div class="mb-5" v-if="showStylePrompt">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">✨</span>
+        <label class="label-text font-bold text-base">Уточнить стиль</label>
+      </div>
+      <input 
+        v-model="stylePrompt"
+        class="input input-bordered w-full text-sm"
+        placeholder="Например: в стиле пиксель-арт"
+      />
+    </div>
+
+    <!-- КНОПКИ ДЕЙСТВИЙ -->
+    <div class="flex gap-2 mt-6 pt-4 border-t border-base-300">
       <button 
-        class="btn btn-primary flex-1" 
-        @click="regenerateImage"
-        :disabled="isGeneratingImage"
+        class="btn btn-primary flex-1 btn-sm" 
+        @click="toggleStylePrompt"
+        v-if="!showStylePrompt"
       >
-        <span class="loading loading-spinner" v-if="isGeneratingImage"></span>
-        {{ isGeneratingImage ? 'Генерация...' : 'Перегенерировать изображение' }}
+        ✨ Уточнить стиль
+      </button>
+      <button 
+        class="btn btn-primary flex-1 btn-sm" 
+        @click="regenerateImage"
+        :disabled="props.isGeneratingImage"
+      >
+        <span class="loading loading-spinner" v-if="props.isGeneratingImage"></span>
+        {{ props.isGeneratingImage ? 'Генерация...' : '🎨 Перегенерить картинку' }}
       </button>
     </div>
   </div>
@@ -91,34 +122,57 @@ const props = defineProps({
 
 const emit = defineEmits(['update', 'delete', 'regenerate-image'])
 
-const localScene = ref({ ...props.scene })
+const localScene = ref({ 
+  scene_number: props.scene.scene_number || 1,
+  action: props.scene.action || '',
+  dialogue: props.scene.dialogue || '',
+  voice_over: props.scene.voice_over || '',
+  visual_prompt: props.scene.visual_prompt || '',
+  ...props.scene 
+})
 
-// Синхронизация при изменении props
+const showStylePrompt = ref(false)
+const stylePrompt = ref('')
+let saveTimeout = null
+
 watch(() => props.scene, (newVal) => {
-  localScene.value = { ...newVal }
+  localScene.value = { 
+    scene_number: newVal.scene_number || 1,
+    action: newVal.action || '',
+    dialogue: newVal.dialogue || '',
+    voice_over: newVal.voice_over || '',
+    visual_prompt: newVal.visual_prompt || '',
+    ...newVal 
+  }
 }, { deep: true })
+
+const debounceSave = () => {
+  if (saveTimeout) {
+    clearTimeout(saveTimeout)
+  }
+  saveTimeout = setTimeout(() => {
+    saveChanges()
+  }, 500)
+}
 
 const saveChanges = () => {
   emit('update', localScene.value)
 }
 
-const addDialogue = () => {
-  if (!localScene.value.dialogues) {
-    localScene.value.dialogues = []
-  }
-  localScene.value.dialogues.push('')
-  saveChanges()
-}
-
-const removeDialogue = (index) => {
-  localScene.value.dialogues.splice(index, 1)
-  saveChanges()
+const toggleStylePrompt = () => {
+  showStylePrompt.value = !showStylePrompt.value
 }
 
 const regenerateImage = () => {
   emit('regenerate-image', {
-    scene: localScene.value,
-    style: 'cinematic' // Можно добавить выбор стиля
+    sceneNumber: localScene.value.scene_number,
+    style: stylePrompt.value || 'cinematic'
   })
+  
+  // Сбросить поле уточнения после использования
+  if (stylePrompt.value) {
+    stylePrompt.value = ''
+    showStylePrompt.value = false
+  }
 }
 </script>

@@ -6,7 +6,9 @@
           <span class="text-primary">Storyboard</span>
           <span class="text-base-content">AI</span>
         </h1>
-        <p class="py-6">Генерируй сценарии и визуальные раскадровки за минуты с помощью ИИ</p>
+        <p class="py-6">
+          Генерируй сценарии и визуальные раскадровки за минуты с помощью ИИ
+        </p>
         
         <div class="flex gap-4 justify-center flex-col sm:flex-row">
           <NuxtLink to="/dashboard" class="btn btn-primary btn-lg">

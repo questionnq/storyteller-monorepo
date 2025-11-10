@@ -2,89 +2,123 @@
   <div>
     <AppHeader />
     
-    <main class="container mx-auto px-4 py-4 max-w-7xl">
+    <main class="container mx-auto px-4 py-6 max-w-7xl">
+      <!-- Табы навигации -->
+      <div class="tabs tabs-boxed mb-6">
+        <NuxtLink 
+          :to="`/project/${route.params.id}`"
+          class="tab"
+          :class="{ 'tab-active': !route.path.includes('/render') }"
+        >
+          📋 Сценарий
+        </NuxtLink>
+        
+        <NuxtLink 
+          v-if="hasGeneratedImages"
+          :to="`/project/${route.params.id}/render`"
+          class="tab"
+          :class="{ 'tab-active': route.path.includes('/render') }"
+        >
+          🎬 Рендер
+        </NuxtLink>
+      </div>
+      
       <!-- Шапка проекта -->
-      <div class="bg-base-200 rounded-lg p-4 mb-4 shadow-lg">
+      <div class="bg-base-200 rounded-lg p-5 mb-6 shadow-lg">
         <input 
           v-model="project.title"
-          class="input input-ghost text-2xl font-bold w-full mb-2"
+          class="input input-ghost text-2xl font-bold w-full mb-3"
           placeholder="Название проекта"
           @blur="saveProject"
         />
         <textarea 
           v-model="project.description"
-          class="textarea textarea-ghost w-full"
-          placeholder="Опишите вашу идею для видео..."
+          class="textarea textarea-ghost w-full text-sm"
+          placeholder="Ваша идея для видео..."
           rows="2"
           @blur="saveProject"
         ></textarea>
         
-        <div class="flex gap-4 mt-4 flex-wrap">
-          <select v-model="project.settings.tone" class="select select-bordered select-sm" @change="saveProject">
-            <option value="humorous">Юмористический</option>
-            <option value="formal">Формальный</option>
-            <option value="friendly">Дружелюбный</option>
-            <option value="dramatic">Драматичный</option>
-            <option value="educational">Образовательный</option>
-          </select>
-          
-          <select v-model="project.settings.style" class="select select-bordered select-sm" @change="saveProject">
-            <option value="cinematic">Кинематографичный</option>
-            <option value="cartoon">Мультфильм</option>
-            <option value="pixel-art">Пиксель-арт</option>
-            <option value="realistic">Реалистичный</option>
-            <option value="minimalist">Минимализм</option>
-          </select>
-          
-          <input 
-            v-model.number="project.settings.duration"
-            type="number"
-            class="input input-bordered input-sm w-24"
-            placeholder="Длительность"
-            @blur="saveProject"
-          />
-          <span class="self-center text-sm">секунд</span>
-        </div>
-        
-        <div class="flex gap-2 mt-4">
-          <button 
-            class="btn btn-primary" 
-            @click="handleGenerateScript"
-            :disabled="generatingScript"
-          >
-            <span class="loading loading-spinner" v-if="generatingScript"></span>
-            {{ generatingScript ? 'Генерирую...' : '📝 Сгенерировать сценарий' }}
-          </button>
-          
-          <button 
-            class="btn btn-secondary" 
-            @click="generateAllImages"
-            :disabled="generatingImages || !project.script?.scenes?.length"
-          >
-            <span class="loading loading-spinner" v-if="generatingImages"></span>
-            {{ generatingImages ? 'Генерирую...' : '🎨 Сгенерировать все изображения' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Редактор сцен -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="space-y-4">
-          <h2 class="text-xl font-bold flex items-center gap-2">
-            📋 Сцены
-            <span class="badge badge-primary" v-if="project.script?.scenes?.length">
-              {{ project.script.scenes.length }}
-            </span>
-          </h2>
-          
-          <div v-if="!project.script?.scenes?.length" class="bg-base-200 rounded-lg p-8 text-center">
-            <div class="text-4xl mb-4 opacity-30">📝</div>
-            <p class="opacity-70">Сценарий еще не сгенерирован</p>
-            <p class="text-sm opacity-50 mt-2">Нажмите кнопку выше</p>
+        <!-- Настройки (пофикшено наложение) -->
+        <div class="grid md:grid-cols-2 gap-6 mt-5">
+          <!-- Тон сценария -->
+          <div class="bg-base-100 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xl">🎯</span>
+              <label class="text-sm font-bold">Тон сценария</label>
+            </div>
+            <input 
+              v-model="project.settings.tone"
+              type="text"
+              class="input input-bordered w-full"
+              placeholder="Например: юмористический, драматичный, мотивирующий"
+              @blur="saveProject"
+            />
+            <p class="text-xs opacity-60 mt-2">
+              Каким должен быть характер текста
+            </p>
           </div>
           
+          <!-- Визуальный стиль -->
+          <div class="bg-base-100 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xl">🎨</span>
+              <label class="text-sm font-bold">Визуальный стиль</label>
+            </div>
+            <input 
+              v-model="project.settings.style"
+              type="text"
+              class="input input-bordered w-full"
+              placeholder="Например: кинематографичный, мультфильм, реалистичный"
+              @blur="saveProject"
+            />
+            <p class="text-xs opacity-60 mt-2">
+              Как должны выглядеть картинки
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Генерация сценария -->
+      <div v-if="!project.script" class="bg-base-200 rounded-lg p-8 mb-6 text-center">
+        <div class="text-6xl mb-4">✨</div>
+        <h2 class="text-2xl font-bold mb-4">Генерация сценария</h2>
+        <p class="mb-6 opacity-70">
+          Опишите вашу идею выше и нажмите кнопку
+        </p>
+        <button 
+          class="btn btn-primary btn-lg" 
+          @click="handleGenerateScript"
+          :disabled="generatingScript"
+        >
+          <span class="loading loading-spinner" v-if="generatingScript"></span>
+          {{ generatingScript ? 'Генерирую...' : '📝 Сгенерировать сценарий' }}
+        </button>
+      </div>
+      
+      <!-- Блок генерации картинок -->
+      <div v-else-if="!hasGeneratedImages" class="bg-base-200 rounded-lg p-8 mb-6 text-center">
+        <div class="text-5xl mb-3">🎨</div>
+        <h3 class="text-xl font-bold mb-2">Следующий шаг: картинки</h3>
+        <p class="opacity-70 mb-4">
+          Сгенерируйте визуальную раскадровку для ваших сцен
+        </p>
+        <button 
+          class="btn btn-secondary"
+          @click="generateAllImages"
+          :disabled="generatingImages"
+        >
+          <span class="loading loading-spinner" v-if="generatingImages"></span>
+          {{ generatingImages ? 'Генерирую...' : 'Сгенерировать все картинки' }}
+        </button>
+      </div>
+      
+      <!-- Редактор сцен и картинок -->
+      <div v-else class="grid lg:grid-cols-2 gap-6">
+        <div class="space-y-5">
+          <h2 class="text-xl font-bold px-1">📋 Сцены</h2>
           <SceneEditor 
-            v-for="scene in project.script?.scenes || []"
+            v-for="scene in project.script.scenes"
             :key="scene.scene_number"
             :scene="scene"
             :is-generating-image="imageGenerationStates[scene.scene_number]?.isGenerating"
@@ -95,27 +129,17 @@
         </div>
         
         <div>
-          <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-            🖼️ Раскадровка
-            <span class="badge badge-secondary" v-if="project.script?.scenes?.length">
-              {{ project.script.scenes.length }}
-            </span>
-          </h2>
-          
-          <div class="space-y-4 max-h-screen overflow-y-auto">
-            <div 
-              v-for="scene in project.script?.scenes || []" 
+          <h2 class="text-xl font-bold mb-4 px-1">🖼️ Раскадровка</h2>
+          <div class="space-y-5 max-h-screen overflow-y-auto">
+            <ImageGenerator
+              v-for="scene in project.script.scenes"
               :key="`image-${scene.scene_number}`"
-              class="h-64"
-            >
-              <ImageGenerator
-                :scene-number="scene.scene_number"
-                :image-url="project.images[scene.scene_number]"
-                :prompt="project.imagePrompts[scene.scene_number]"
-                :is-generating="imageGenerationStates[scene.scene_number]?.isGenerating"
-                @regenerate="handleRegenerateSingleImage"
-              />
-            </div>
+              :scene-number="scene.scene_number"
+              :image-url="project.images[scene.scene_number]"
+              :prompt="project.imagePrompts[scene.scene_number]"
+              :is-generating="imageGenerationStates[scene.scene_number]?.isGenerating"
+              @regenerate="handleRegenerateSingleImage"
+            />
           </div>
         </div>
       </div>
@@ -124,19 +148,17 @@
 </template>
 
 <script setup>
-const { generateScript, generateSceneImage, saveProject: apiSaveProject, getProject } = useApi()
+const { generateScript: apiGenerateScript, generateSceneImage, saveProject: apiSaveProject, getProject } = useApi()
 const { requireAuth } = useSupabaseAuth()
 const route = useRoute()
 const router = useRouter()
 
-// Состояние проекта
 const project = ref({
   title: 'Новый проект',
   description: '',
   settings: {
-    tone: 'friendly',
-    style: 'cinematic',
-    duration: 30
+    tone: '',
+    style: ''
   },
   script: null,
   images: {},
@@ -147,10 +169,13 @@ const imageGenerationStates = ref({})
 const generatingScript = ref(false)
 const generatingImages = ref(false)
 
-// Проверка авторизации
+const hasGeneratedImages = computed(() => {
+  return project.value.script && 
+         project.value.images && 
+         Object.keys(project.value.images).length > 0
+})
+
 onMounted(async () => {
-  if (!requireAuth()) return
-  
   if (route.params.id !== 'new') {
     await loadProject(route.params.id)
   }
@@ -161,15 +186,10 @@ const loadProject = async (id) => {
     const loadedProject = await getProject(id)
     project.value = {
       ...loadedProject,
-      settings: loadedProject.settings || {
-        tone: 'friendly',
-        style: 'cinematic',
-        duration: 30
-      }
+      settings: loadedProject.settings || { tone: '', style: '' }
     }
   } catch (error) {
     console.error('Ошибка загрузки проекта:', error)
-    alert('Не удалось загрузить проект')
   }
 }
 
@@ -182,16 +202,14 @@ const handleGenerateScript = async () => {
   generatingScript.value = true
   
   try {
-    const result = await generateScript(project.value.description, {
+    const result = await apiGenerateScript(project.value.description, {
       tone: project.value.settings.tone,
-      duration: project.value.settings.duration,
-      style: project.value.settings.style
+      targetAudience: 'general'
     })
     
     project.value.script = result.script
     project.value.title = result.script.title || project.value.title
     
-    // Сбросить старые изображения
     project.value.images = {}
     project.value.imagePrompts = {}
     
@@ -200,6 +218,22 @@ const handleGenerateScript = async () => {
     alert(error.message)
   } finally {
     generatingScript.value = false
+  }
+}
+
+const generateAllImages = async () => {
+  if (!project.value.script?.scenes) return
+  
+  generatingImages.value = true
+  
+  try {
+    for (const scene of project.value.script.scenes) {
+      await handleRegenerateSingleImage({ sceneNumber: scene.scene_number })
+    }
+  } catch (error) {
+    alert('Ошибка генерации картинок: ' + error.message)
+  } finally {
+    generatingImages.value = false
   }
 }
 
@@ -215,7 +249,6 @@ const deleteScene = (sceneNumber) => {
   if (!confirm('Удалить сцену?')) return
   
   project.value.script.scenes = project.value.script.scenes.filter(s => s.scene_number !== sceneNumber)
-  // Перенумеровать сцены
   project.value.script.scenes.forEach((scene, index) => {
     scene.scene_number = index + 1
   })
@@ -240,25 +273,9 @@ const handleRegenerateSingleImage = async ({ sceneNumber, style }) => {
   }
 }
 
-const generateAllImages = async () => {
-  if (!project.value.script?.scenes?.length) return
-  
-  generatingImages.value = true
-  
-  for (const scene of project.value.script.scenes) {
-    await handleRegenerateSingleImage({ 
-      sceneNumber: scene.scene_number, 
-      style: project.value.settings.style 
-    })
-  }
-  
-  generatingImages.value = false
-}
-
 const saveProject = async () => {
   try {
     const result = await apiSaveProject(project.value)
-    // Обновить ID если это новый проект
     if (route.params.id === 'new' && result.id) {
       router.replace(`/project/${result.id}`)
     }

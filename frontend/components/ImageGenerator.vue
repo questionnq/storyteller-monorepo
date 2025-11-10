@@ -91,7 +91,7 @@ const selectedStyle = ref('cinematic')
 const progressText = ref('Обрабатываю запрос...')
 const error = ref(null)
 
-// Симуляция прогресса (можно удалить, если API возвращает прогресс)
+// Симуляция прогресса
 watch(() => props.isGenerating, (newVal) => {
   if (newVal) {
     error.value = null

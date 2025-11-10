@@ -103,11 +103,48 @@ export const useApi = () => {
     return await apiFetch(`/projects/${id}`)
   }
 
+  // Генерация озвучки
+  const generateVoiceover = async (projectId, scenes) => {
+    try {
+      return await apiFetch(`/projects/${projectId}/voiceover`, {
+        method: 'POST',
+        body: { scenes }
+      })
+    } catch (error) {
+      throw new Error(error.data?.detail || 'Не удалось сгенерировать озвучку')
+    }
+  }
+  
+  // Запуск рендеринга видео
+  const startRender = async (projectId, settings) => {
+    try {
+      return await apiFetch(`/projects/${projectId}/render`, {
+        method: 'POST',
+        body: settings
+      })
+    } catch (error) {
+      throw new Error(error.data?.detail || 'Не удалось запустить рендеринг')
+    }
+  }
+  
+  // Получение статуса рендеринга
+  const getRenderStatus = async (projectId) => {
+    try {
+      return await apiFetch(`/projects/${projectId}/status`)
+    } catch (error) {
+      throw new Error(error.data?.detail || 'Не удалось получить статус')
+    }
+  }
+
+
   return {
     generateScript,
     generateSceneImage,
     saveProject,
     getUserProjects,
-    getProject
+    getProject,
+    generateVoiceover,
+    startRender,
+    getRenderStatus
   }
 }

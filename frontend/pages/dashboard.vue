@@ -5,14 +5,14 @@
     <main class="container mx-auto px-4 py-8 max-w-6xl">
       <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold">Мои проекты</h1>
-        <button class="btn btn-primary" @click="createNewProject">
-          <span class="text-2xl">+</span> Новый проект
+        <button class="btn btn-primary" @click="handleCreateProject">
+          + Новый проект
         </button>
       </div>
 
       <!-- Состояние загрузки -->
-      <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="i in 4" :key="i" class="card bg-base-200 shadow-xl">
+      <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div v-for="i in 3" :key="i" class="card bg-base-200 shadow-xl">
           <div class="card-body">
             <div class="skeleton h-6 w-3/4 mb-2"></div>
             <div class="skeleton h-4 w-full mb-4"></div>
@@ -22,13 +22,51 @@
       </div>
 
       <!-- Список проектов -->
-      <div v-else-if="projects.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <ProjectCard 
+      <div v-else-if="projects.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div 
           v-for="project in projects" 
-          :key="project.id" 
-          :project="project"
-          @delete="handleDeleteProject"
-        />
+          :key="project.id"
+          class="card bg-base-200 shadow-xl hover:shadow-2xl transition-all"
+        >
+          <div class="card-body">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="card-title text-lg">{{ project.title }}</h3>
+              <span 
+                class="badge badge-sm"
+                :class="{
+                  'badge-warning': !project.script,
+                  'badge-info': project.script && !project.final_video_url,
+                  'badge-success': project.final_video_url
+                }"
+              >
+                {{ project.final_video_url ? 'Готов' : project.script ? 'В процессе' : 'Черновик' }}
+              </span>
+            </div>
+            
+            <p class="text-sm opacity-70 line-clamp-2 mb-4">{{ project.description }}</p>
+            
+            <div class="flex gap-2">
+              <NuxtLink 
+                :to="`/project/${project.id}`"
+                class="btn btn-primary btn-sm flex-1"
+              >
+                Открыть
+              </NuxtLink>
+              
+              <NuxtLink 
+                v-if="project.script"
+                :to="`/project/${project.id}/render`"
+                class="btn btn-secondary btn-sm"
+              >
+                Рендер
+              </NuxtLink>
+            </div>
+            
+            <div class="text-xs opacity-50 mt-3">
+              {{ formatDate(project.created_at) }}
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Пустое состояние -->
@@ -36,7 +74,7 @@
         <div class="text-6xl mb-4 opacity-30">🎬</div>
         <h2 class="text-2xl font-bold mb-4">У вас пока нет проектов</h2>
         <p class="mb-6 opacity-70">Создайте ваш первый проект и начните генерировать сценарии</p>
-        <button class="btn btn-primary btn-lg" @click="createNewProject">
+        <button class="btn btn-primary btn-lg" @click="handleCreateProject">
           Создать проект
         </button>
       </div>
@@ -45,20 +83,15 @@
 </template>
 
 <script setup>
-definePageMeta({
-  layout: 'default'
-})
-
-const { requireAuth } = useSupabaseAuth()
 const { getUserProjects, saveProject } = useApi()
+const { requireAuth } = useSupabaseAuth()
 const router = useRouter()
 
 const loading = ref(true)
 const projects = ref([])
 
-// Проверка авторизации
 onMounted(async () => {
-  if (!requireAuth()) return
+  requireAuth()
   await loadProjects()
 })
 
@@ -68,36 +101,36 @@ const loadProjects = async () => {
     projects.value = await getUserProjects()
   } catch (error) {
     console.error('Ошибка загрузки проектов:', error)
-    alert('Не удалось загрузить проекты')
   } finally {
     loading.value = false
   }
 }
 
-const createNewProject = async () => {
+// ✅ ПРОВЕРЕННАЯ ФУНКЦИЯ СОЗДАНИЯ ПРОЕКТА
+const handleCreateProject = async () => {
   try {
     const newProject = {
       title: 'Новый проект',
-      description: 'Опишите вашу идею здесь...',
+      description: '',
+      settings: { tone: '', style: '' },
       script: null,
-      scenes: []
+      images: {},
+      imagePrompts: {}
     }
     
     const created = await saveProject(newProject)
-    router.push(`/project/${created.id}`)
+    if (created?.id) {
+      router.push(`/project/${created.id}`)
+    } else {
+      throw new Error('ID проекта не получен')
+    }
   } catch (error) {
     console.error('Ошибка создания проекта:', error)
-    alert('Не удалось создать проект')
+    alert(`Не удалось создать проект: ${error.message}`)
   }
 }
 
-const handleDeleteProject = async (projectId) => {
-  try {
-    // Здесь добавьте вызов API для удаления
-    // await deleteProject(projectId)
-    projects.value = projects.value.filter(p => p.id !== projectId)
-  } catch (error) {
-    console.error('Ошибка удаления проекта:', error)
-  }
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('ru-RU')
 }
 </script>
