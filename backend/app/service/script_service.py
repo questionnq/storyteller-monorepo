@@ -6,11 +6,12 @@ import json
 genai.configure(api_key=GEMINI_API_KEY)
 
 
-async def generate_script(promt: str | None, style: str | None, time: float | None) -> dict:
+async def generate_script(prompt: str | None, genre: str | None, style: str | None, time: float | None) -> dict:
     """Генерация сценария с помощью Gemini API"""
 
-    promt = f"""
-    Сгенерируй JSON с сценарием для видео на тему: "{promt}".
+    prompt = f"""
+    Сгенерируй JSON с сценарием для видео на тему: "{prompt}".
+    Жанр видео должен быть: {genre}.
     Стиль видео должен быть: {style}.
     Длительность видео должна быть около {time} секунд.
     Формат JSON должен быть следующим:
@@ -35,7 +36,7 @@ async def generate_script(promt: str | None, style: str | None, time: float | No
     """
 
     model = genai.GenerativeModel("gemini-2.5-flash")
-    response = await model.generate_content_async(promt)
+    response = await model.generate_content_async(prompt)
 
     # Убираем обёртку ```json ... ```
     clean_text = re.sub(r"^```json\s*|\s*```$", "", response.text.strip(), flags=re.MULTILINE)

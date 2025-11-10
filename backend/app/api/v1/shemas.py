@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
 class ScriptRequest(BaseModel):
-    promt: str | None = Field(max_lenght = 100)
+    prompt: str | None = Field(max_lenght = 300)
+    genre: str | None = Field(max_lenght = 50)
     style: str | None = Field(max_lenght = 50)
-    time: float | None = Field(ge = 0, le = 300)
+    time: float | None = Field(ge = 0, le = 150)
