@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   currentStatus: { type: String, default: 'pending' } // pending, voiceover, rendering, done, failed
 })
 

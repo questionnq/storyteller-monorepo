@@ -1,3 +1,5 @@
+import { ref, onUnmounted } from 'vue'
+
 export const usePolling = (callback, interval = 2000) => {
   const isPolling = ref(false)
   const intervalId = ref(null)
