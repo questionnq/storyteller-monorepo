@@ -2,11 +2,14 @@ from supabase import create_client
 from datetime import datetime
 import uuid
 from app.config import SUPABASE_URL, SUPABASE_KEY
+from structlog import get_logger
+
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 ## Add scene in project
-def create_project_with_scenes(script: dict, user_id: str = None) -> str:
+def create_project_with_scenes(script: dict, user_id: None) -> str:
+
     # 1️⃣ Создаём проект
     project_data = {
         "user_id": user_id,
@@ -15,8 +18,9 @@ def create_project_with_scenes(script: dict, user_id: str = None) -> str:
         "render_status": "pending"  # можно по умолчанию
     }
 
+
     res = supabase.table("projects").insert(project_data).execute()
-    
+
 
     project_id = res.data[0]["id"]
 
@@ -33,8 +37,6 @@ def create_project_with_scenes(script: dict, user_id: str = None) -> str:
 
     if scenes_data:
         res_scenes = supabase.table("scenes").insert(scenes_data).execute()
-        if res_scenes.error:
-            raise Exception(f"Supabase insert scenes error: {res_scenes.error.message}")
 
     return project_id
 

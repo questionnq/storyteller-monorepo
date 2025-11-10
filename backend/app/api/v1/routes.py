@@ -3,10 +3,12 @@ from app.service.script_service import generate_script
 from .shemas import ScriptRequest
 from app.db.supa_request import create_project_with_scenes, get_project_by_id
 
+
 router = APIRouter(prefix = "/api/v1")
 
 @router.post("/generate-script")
 async def generate_script_endpoint(request: ScriptRequest):
+    
     result = await generate_script(request.prompt, request.genre, request.style, request.time)
     
     if not result:
