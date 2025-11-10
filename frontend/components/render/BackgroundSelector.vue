@@ -7,8 +7,8 @@
         v-for="bg in backgrounds" 
         :key="bg.value"
         class="card cursor-pointer hover:shadow-xl transition-all"
-        :class="{ 'ring-2 ring-primary': modelValue === bg.value }"
-        @click="$emit('update:modelValue', bg.value)"
+        :class="{ 'ring-2 ring-primary': modelValue === bg.value, 'opacity-50 cursor-not-allowed': disabled }"
+        @click="!disabled && $emit('update:modelValue', bg.value)"
       >
         <figure class="px-4 pt-4">
           <div class="bg-base-300 w-full h-32 rounded-lg flex items-center justify-center text-4xl">
@@ -26,7 +26,8 @@
 
 <script setup>
 defineProps({
-  modelValue: { type: String, default: 'minecraft' }
+  modelValue: { type: String, default: 'minecraft' },
+  disabled: { type: Boolean, default: false }
 })
 
 defineEmits(['update:modelValue'])

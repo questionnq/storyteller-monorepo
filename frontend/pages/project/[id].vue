@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AppHeader />
+    <Notification />
     
     <main class="container mx-auto px-4 py-6 max-w-7xl">
       <!-- Табы навигации -->
@@ -39,7 +39,7 @@
           @blur="saveProject"
         ></textarea>
         
-        <!-- Настройки (пофикшено наложение) -->
+        <!-- Настройки -->
         <div class="grid md:grid-cols-2 gap-6 mt-5">
           <!-- Тон сценария -->
           <div class="bg-base-100 rounded-lg p-4">
@@ -150,6 +150,7 @@
 <script setup>
 const { generateScript: apiGenerateScript, generateSceneImage, saveProject: apiSaveProject, getProject } = useApi()
 const { requireAuth } = useSupabaseAuth()
+const { showError, showSuccess } = useNotification() // ВАЖНО: система уведомлений
 const route = useRoute()
 const router = useRouter()
 
@@ -188,14 +189,14 @@ const loadProject = async (id) => {
       ...loadedProject,
       settings: loadedProject.settings || { tone: '', style: '' }
     }
-  } catch (error) {
-    console.error('Ошибка загрузки проекта:', error)
+  } catch (err) {
+    showError('Ошибка загрузки проекта: ' + err.message)
   }
 }
 
 const handleGenerateScript = async () => {
   if (!project.value.description.trim()) {
-    alert('Опишите вашу идею для видео')
+    showError('Опишите вашу идею для видео')
     return
   }
 
@@ -204,7 +205,7 @@ const handleGenerateScript = async () => {
   try {
     const result = await apiGenerateScript(project.value.description, {
       tone: project.value.settings.tone,
-      targetAudience: 'general'
+      target_audience: 'general'
     })
     
     project.value.script = result.script
@@ -214,8 +215,9 @@ const handleGenerateScript = async () => {
     project.value.imagePrompts = {}
     
     await saveProject()
+    showSuccess('Сценарий успешно сгенерирован!')
   } catch (error) {
-    alert(error.message)
+    showError(error.message || 'Не удалось сгенерировать сценарий')
   } finally {
     generatingScript.value = false
   }
@@ -230,8 +232,9 @@ const generateAllImages = async () => {
     for (const scene of project.value.script.scenes) {
       await handleRegenerateSingleImage({ sceneNumber: scene.scene_number })
     }
+    showSuccess('Все картинки сгенерированы!')
   } catch (error) {
-    alert('Ошибка генерации картинок: ' + error.message)
+    showError('Ошибка генерации картинок: ' + error.message)
   } finally {
     generatingImages.value = false
   }
@@ -265,8 +268,9 @@ const handleRegenerateSingleImage = async ({ sceneNumber, style }) => {
     const result = await generateSceneImage(scene, style || project.value.settings.style)
     project.value.images[sceneNumber] = result.image_url
     project.value.imagePrompts[sceneNumber] = result.prompt
+    showSuccess(`Изображение сцены ${sceneNumber} обновлено!`)
   } catch (error) {
-    alert(`Ошибка генерации изображения: ${error.message}`)
+    showError(`Ошибка генерации изображения: ${error.message}`)
   } finally {
     imageGenerationStates.value[sceneNumber].isGenerating = false
     saveProject()
@@ -280,7 +284,7 @@ const saveProject = async () => {
       router.replace(`/project/${result.id}`)
     }
   } catch (error) {
-    console.error('Ошибка сохранения проекта:', error)
+    showError('Ошибка сохранения проекта: ' + error.message)
   }
 }
 </script>

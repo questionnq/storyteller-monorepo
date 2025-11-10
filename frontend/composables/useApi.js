@@ -28,12 +28,13 @@ const ImageGenerationSchema = z.object({
 
 export const useApi = () => {
   const config = useRuntimeConfig()
-  const { user } = useSupabaseAuth()
-  
+  const supabase = useSupabaseClient() // ✅ ПРАВИЛЬНО
+
   const getAuthHeader = async () => {
-    if (!user.value) return {}
-    const token = await user.value.getIdToken()
-    return { Authorization: `Bearer ${token}` }
+    // ✅ Получаем сессию через auth клиент
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) return {}
+    return { Authorization: `Bearer ${session.access_token}` }
   }
 
   const apiFetch = async (endpoint, options = {}) => {
@@ -135,7 +136,6 @@ export const useApi = () => {
       throw new Error(error.data?.detail || 'Не удалось получить статус')
     }
   }
-
 
   return {
     generateScript,

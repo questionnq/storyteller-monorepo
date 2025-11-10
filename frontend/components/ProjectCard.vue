@@ -1,5 +1,5 @@
 <template>
-  <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+  <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-all hover:scale-[1.02]">
     <div class="card-body">
       <h3 class="card-title text-lg">{{ project.title }}</h3>
       <p class="text-sm opacity-70 line-clamp-2">{{ project.description }}</p>
@@ -9,10 +9,18 @@
           {{ formatDate(project.created_at) }}
         </span>
         <div class="flex gap-2">
-          <button class="btn btn-primary btn-sm" @click="openProject">
+          <button 
+            class="btn btn-primary btn-sm"
+            @click="openProject"
+            :disabled="isLoading"
+          >
             Открыть
           </button>
-          <button class="btn btn-ghost btn-sm" @click="deleteProject">
+          <button 
+            class="btn btn-ghost btn-sm"
+            @click="emit('delete', project.id)"
+            :disabled="isLoading"
+          >
             <span class="text-error">✕</span>
           </button>
         </div>
@@ -26,23 +34,26 @@ const props = defineProps({
   project: {
     type: Object,
     required: true
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['delete'])
+defineEmits(['click', 'delete'])
+
 const router = useRouter()
 
 const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('ru-RU')
+  return new Date(dateString).toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
 }
 
 const openProject = () => {
   router.push(`/project/${props.project.id}`)
-}
-
-const deleteProject = () => {
-  if (confirm('Удалить проект? Это действие нельзя отменить.')) {
-    emit('delete', props.project.id)
-  }
 }
 </script>
