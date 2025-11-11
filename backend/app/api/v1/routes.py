@@ -22,6 +22,7 @@ async def generate_script_endpoint(request: ScriptRequest,
     try:
         project_id = create_project_with_scenes(
             script=result, 
+            user_prompt=request.prompt,
             time=request.time, 
             genre=request.genre, 
             style=request.style,
@@ -41,7 +42,7 @@ async def generate_script_endpoint(request: ScriptRequest,
 async def get_all_projects_endpoint(user_id: str = Depends(get_current_user)): # ❗ Аутентификация
     # Этот роут необходим для dashboard.vue
     try:
-        projects = get_all_projects() # RLS отфильтрует
+        projects = get_all_projects(user_id) 
         return projects
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load projects: {str(e)}")

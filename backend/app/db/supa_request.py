@@ -8,12 +8,13 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 ### ADD PROJECT WITH SCENES
-def create_project_with_scenes(script: dict, time: float, genre: str | None, style: str | None, user_id: str) -> str:
+def create_project_with_scenes(script: dict, user_prompt: str, time: float, genre: str | None, style: str | None, user_id: str) -> str:
     formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # 1️⃣ Создаем проект
     project_data = {
         "title": script.get("title"),
+        "description": user_prompt,
         "intro": script.get("intro"),
         "project_time": time,
         "created_at": formatted_time,
@@ -57,9 +58,11 @@ def get_project_scenes(project_id: str):
     res = supabase.table("scenes").select("*").eq("project_id", project_id).order("scene_number").execute()
     return res.data
 
-def get_all_projects() -> List[dict]:
-    # RLS отфильтрует по user_id, так что нам не нужно передавать его в аргументах
-    res = supabase.table("projects").select("*").order("created_at", desc=True).execute()
+def get_all_projects(user_id: str) -> List[dict]:
+    res = supabase.table("projects")\
+        .select("id, title, description, created_at, project_time, genre, style")\
+        .eq("user_id", user_id)\
+        .order("created_at", desc=True).execute()
     return res.data
 
 ## Get scenes by project ID
