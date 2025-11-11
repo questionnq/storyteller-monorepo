@@ -5,7 +5,7 @@ from app.db.supa_request import create_project_with_scenes, get_project, get_pro
 from app.db.auth import get_current_user
 
 
-router = APIRouter(prefix = "/api/v1")
+router = APIRouter()
 
 @router.post("/generate-script")
 async def generate_script_endpoint(request: ScriptRequest, 
