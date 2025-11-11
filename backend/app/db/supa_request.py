@@ -5,13 +5,10 @@ from app.config import SUPABASE_URL, SUPABASE_KEY
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-## Get formatted time
-time = datetime.now()
-formatted_time = time.strftime("%Y-%m-%d %H:%M:%S")
-
 
 ### ADD PROJECT WITH SCENES
-def create_project_with_scenes(script: dict, time: float) -> str:
+def create_project_with_scenes(script: dict, time: float, genre: str | None, style: str | None) -> str:
+    formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # 1️⃣ Создаем проект
     project_data = {
@@ -19,6 +16,8 @@ def create_project_with_scenes(script: dict, time: float) -> str:
         "intro": script.get("intro"),
         "project_time": time,
         "created_at": formatted_time,
+        "tone": genre,  
+        "style": style
     }
 
     res = supabase.table("projects").insert(project_data).execute()
@@ -30,12 +29,13 @@ def create_project_with_scenes(script: dict, time: float) -> str:
     # 2️⃣ Создаём сцену
     scenes_data = []
     for scene in script.get("scenes", []):
-        text_content = f"{scene.get('description','')}\n{scene.get('dialogue','')}"
         scenes_data.append({
             "project_id": project_id,
             "scene_number": scene.get("scene_number"),
+            "action": scene.get("action"),
             "dialogue": scene.get("dialogue"),
-            "visual_prompt": scene.get("description"),
+            "voice_over": scene.get("voice_over"),
+            "visual_prompt": scene.get("visual_prompt"),
             "generated_image_url": None,
             "created_at": formatted_time,
         })

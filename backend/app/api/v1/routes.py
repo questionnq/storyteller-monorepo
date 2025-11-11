@@ -16,7 +16,12 @@ async def generate_script_endpoint(request: ScriptRequest):
 
     ## try to save to database
     try:
-        project_id = create_project_with_scenes(result)
+        project_id = create_project_with_scenes(
+            script=result, 
+            time=request.time, 
+            genre=request.genre, 
+            style=request.style
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create project: {str(e)}")
 
@@ -40,10 +45,10 @@ async def get_project_endpoint(project_id: str):
         "scenes": [
             {
                 "scene_number": s.get("scene_number"),
-                "action": s.get("visual_prompt") or "",
-                "dialogues": [s.get("dialogue")] if s.get("dialogue") else [],
-                "voiceover": None,
-                "notes": ""
+                "action": s.get("action") or "",
+                "dialogue": s.get("dialogue") or "",
+                "voice_over": s.get("voice_over") or "",
+                "visual_prompt": s.get("visual_prompt") or ""
             } for s in scenes
         ]
     }
@@ -51,11 +56,12 @@ async def get_project_endpoint(project_id: str):
     return {
         "id": project_id,
         "title": project.get("title"),
-        "description": project.get("description"),
+        "description": project.get("description"), # Это идея, которую ввел юзер
         "settings": {
-            "tone": project.get("tone") or "",
-            "style": project.get("style") or ""
+            "tone": project.get("tone") or "",     
+            "style": project.get("style") or "",   
+            "duration": project.get("project_time") or 30 
         },
         "script": script,
-        "images": {}  # можно позже наполнить
+        "images": {}
     }
