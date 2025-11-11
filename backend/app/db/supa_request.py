@@ -62,4 +62,12 @@ def get_all_projects() -> List[dict]:
     res = supabase.table("projects").select("*").order("created_at", desc=True).execute()
     return res.data
 
-    
+## Get scenes by project ID
+def get_scenes_by_project(project_id: str):
+    response = supabase.table("scenes").select("id, visual_prompt").eq("project_id", project_id).execute()
+    return response.data
+
+## Update scene with generated image URL
+def update_scene_image_url(scene_id: str, image_url: str):
+    res = supabase.table("scenes").update({"generated_image_url": image_url}).eq("id", scene_id).execute()
+    return res.data

@@ -6,3 +6,7 @@ class ScriptRequest(BaseModel):
     genre: Optional[str] = Field(None, max_length=50)
     style: Optional[str] = Field(None, max_length=50)
     time: float = Field(30.0, ge=10, le=180, description="Общая длительность видео в секундах")
+
+
+class GenerateImages(BaseModel):
+    project_id: str = Field(..., description="ID проекта для генерации изображений")
