@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.service.gemini_script import generate_script
 from app.service.image_script import generate_image
-from .shemas import ScriptRequest
-from app.db.supa_request import create_project_with_scenes, get_project, get_project_scenes, get_all_projects, get_scenes_by_project, update_scene_image_url
+from .shemas import ScriptRequest, SceneListResponse, SceneUpdateRequest
+from app.db.supa_request import create_project_with_scenes, get_project, get_project_scenes, get_all_projects, get_visual_promt_by_project, update_scene_image_url, update_scene, get_scenes_by_project
 from app.db.auth import get_current_user
 
 
@@ -44,6 +44,7 @@ async def get_all_projects_endpoint(user_id: str = Depends(get_current_user)): #
     try:
         projects = get_all_projects(user_id) 
         return projects
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load projects: {str(e)}")
 
@@ -85,11 +86,11 @@ async def get_project_endpoint(project_id: str, user_id: str = Depends(get_curre
         "images": {}
     }
 
-
+## Generate image rout
 @router.post("/generate-image/{project_id}")
 async def generate_images(project_id: str):
     # make response to db
-    scenes = get_scenes_by_project(project_id)
+    scenes = get_visual_promt_by_project(project_id)
 
     if not scenes:
         raise HTTPException(status_code=404, detail="No scenes found for this project")
@@ -112,3 +113,42 @@ async def generate_images(project_id: str):
         "project_id": project_id,
         "scenes": result
     }
+
+    
+@router.get("/{project_id}/scenes", response_model=SceneListResponse)
+def get_project_scenes(project_id: str):
+    """
+    Возвращает все сцены проекта по его UUID.
+    Используется фронтом для генерации форм редактирования.
+    """
+    try:
+        scenes = get_scenes_by_project(str(project_id))  # Supabase принимает строку
+
+        if not scenes:
+            raise HTTPException(status_code=404, detail="Scenes not found for this project")
+
+        return {"project_id": project_id, "scenes": scenes}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch scenes: {str(e)}")
+
+
+@router.put("/{project_id}/scenes")
+def update_project_scenes(project_id: str, request: SceneUpdateRequest):
+    """
+    Обновляет сцены проекта.
+    """
+    try:
+        updated_scenes = []
+
+        for scene in request.scenes:
+            update_data = scene.dict(exclude_unset=True)
+            updated = update_scene(project_id, scene.scene_number, update_data)
+            updated_scenes.append(updated)
+
+        return {"message": "Scenes updated successfully", "updated_scenes": updated_scenes}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update scenes: {str(e)}")

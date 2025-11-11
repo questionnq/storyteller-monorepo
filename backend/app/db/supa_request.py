@@ -66,11 +66,48 @@ def get_all_projects(user_id: str) -> List[dict]:
     return res.data
 
 ## Get scenes by project ID
-def get_scenes_by_project(project_id: str):
-    response = supabase.table("scenes").select("id, visual_prompt").eq("project_id", project_id).execute()
-    return response.data
+def get_visual_promt_by_project(project_id: str):
+    res = supabase.table("scenes").select("id, visual_prompt").eq("project_id", project_id).execute()
+    return res.data
 
 ## Update scene with generated image URL
 def update_scene_image_url(scene_id: str, image_url: str):
     res = supabase.table("scenes").update({"generated_image_url": image_url}).eq("id", scene_id).execute()
     return res.data
+
+
+def get_scenes_by_project(project_id: str):
+    """
+    Возвращает все сцены проекта из таблицы 'scenes' по project_id.
+    """
+    try:
+        res = supabase.table("scenes") \
+            .select("id, scene_number, action, dialogue, voice_over, visual_prompt") \
+            .eq("project_id", project_id) \
+            .order("scene_number", desc=False) \
+            .execute()
+
+        if not res.data:
+            return []  # если сцен нет — возвращаем пустой список
+
+        return res.data
+
+    except Exception as e:
+        raise RuntimeError(f"Failed to fetch scenes: {str(e)}")
+    
+## Get count of scenes in project
+def update_scene(project_id: str, scene_number: int, update_data: dict):
+    try:
+        res = supabase.table("scenes") \
+            .update(update_data) \
+            .eq("project_id", project_id) \
+            .eq("scene_number", scene_number) \
+            .execute()
+
+        if not res.data:
+            raise ValueError(f"Scene {scene_number} not found for project {project_id}")
+
+        return res.data[0]  # возвращаем обновлённую строку
+
+    except Exception as e:
+        raise RuntimeError(f"Database update failed: {str(e)}")

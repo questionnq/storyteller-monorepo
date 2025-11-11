@@ -74,3 +74,6 @@ async def generate_script(prompt: str | None, genre: str | None, style: str | No
         return json.loads(clean_text)
     except json.JSONDecodeError:
         return {"error": "Invalid JSON", "raw": response.text}
+
+
+    
