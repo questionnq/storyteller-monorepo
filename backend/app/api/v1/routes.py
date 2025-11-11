@@ -36,7 +36,6 @@ async def generate_script_endpoint(request: ScriptRequest,
 @router.get("/projects")
 async def get_all_projects_endpoint(user_id: str = Depends(get_current_user)): # ❗ Аутентификация
     # Этот роут необходим для dashboard.vue
-    from app.db.supa_request import get_all_projects # Временный импорт
     try:
         projects = get_all_projects() # RLS отфильтрует
         return projects
