@@ -60,7 +60,7 @@ def get_project_scenes(project_id: str):
 
 def get_all_projects(user_id: str) -> List[dict]:
     res = supabase.table("projects")\
-        .select("id, title, description, created_at, project_time, genre, style")\
+        .select("id, title, description, created_at, project_time, tone, style")\
         .eq("user_id", user_id)\
         .order("created_at", desc=True).execute()
     return res.data
