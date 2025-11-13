@@ -129,7 +129,7 @@
 
       <!-- Индикатор прогресса рендера -->
       <RenderProgress
-        v-if="progress > 0"
+        v-if="status === 'processing' && progress > 0"
         :progress="progress"
         :progress-text="progressText"
         class="mb-6"
@@ -393,10 +393,13 @@ const startRender = async () => {
 const pollStatus = async (projectId) => {
   const { start, stop } = usePolling(async () => {
     try {
+      console.log('[pollStatus] Checking render status for project:', projectId)
       const result = await getRenderStatus(projectId)
+      console.log('[pollStatus] Render status result:', result)
 
       // Обновляем статус рендера
       const renderStatus = result.render_status
+      console.log('[pollStatus] Current render status:', renderStatus)
 
       // Статусы: 'pending', 'generating_audio', 'rendering_video', 'completed', 'error'
       if (renderStatus === 'completed') {
@@ -405,11 +408,13 @@ const pollStatus = async (projectId) => {
         videoUrl.value = result.final_video_url
         status.value = 'done'
         updateCache()
+        console.log('[pollStatus] Render completed! Video URL:', videoUrl.value)
         stop()
       } else if (renderStatus === 'error') {
         progress.value = 0
         error.value = 'Ошибка при рендеринге видео'
         status.value = 'failed'
+        console.error('[pollStatus] Render failed')
         stop()
       } else {
         status.value = 'processing'
@@ -421,13 +426,16 @@ const pollStatus = async (projectId) => {
           progress.value = 50
           progressText.value = 'Рендеринг видео... Это может занять 1-2 минуты'
         }
+        console.log('[pollStatus] Progress:', progress.value, '% -', progressText.value)
       }
     } catch (err) {
+      console.error('[pollStatus] Error:', err)
       handleError(err, 'pollStatus')
       stop()
     }
   }, 3000)
 
+  console.log('[pollStatus] Starting polling...')
   start()
 }
 </script>

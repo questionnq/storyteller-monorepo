@@ -55,6 +55,12 @@ async def generate_script_endpoint(request: ScriptRequest,
 
 
 # ========== ПОЛУЧЕНИЕ ПРОЕКТОВ ==========
+@router.options("/projects")
+async def get_projects_options():
+    """CORS preflight handler"""
+    return {"message": "OK"}
+
+
 @router.get("/projects")
 async def get_all_projects_endpoint(user_id: str = Depends(get_current_user)):
     try:
@@ -65,6 +71,12 @@ async def get_all_projects_endpoint(user_id: str = Depends(get_current_user)):
 
 
 # ========== ПОЛУЧЕНИЕ ПРОЕКТА (ИСПРАВЛЕНО!) ==========
+@router.options("/projects/{project_id}")
+async def get_project_options(project_id: str):
+    """CORS preflight handler"""
+    return {"message": "OK"}
+
+
 @router.get("/projects/{project_id}")
 async def get_project_endpoint(project_id: str, user_id: str = Depends(get_current_user)):
     """
@@ -487,6 +499,12 @@ async def render_video_endpoint(
     except Exception as e:
         update_render_status(project_id, "error")
         raise HTTPException(status_code=500, detail=f"Failed to start rendering: {str(e)}")
+
+
+@router.options("/render-status/{project_id}")
+async def render_status_options(project_id: str):
+    """CORS preflight handler"""
+    return {"message": "OK"}
 
 
 @router.get("/render-status/{project_id}")
