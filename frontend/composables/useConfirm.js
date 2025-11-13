@@ -7,15 +7,18 @@ export const useConfirm = () => {
   const dialogMessage = useState('confirm-dialog-message', () => '')
 
   const confirm = (title, message) => {
+    console.log('[useConfirm] confirm called:', { title, message })
     return new Promise((resolve) => {
       dialogTitle.value = title
       dialogMessage.value = message
       isOpen.value = true
       resolveCallback = resolve
+      console.log('[useConfirm] modal opened, isOpen:', isOpen.value)
     })
   }
 
   const handleConfirm = () => {
+    console.log('[useConfirm] handleConfirm called')
     isOpen.value = false
     if (resolveCallback) {
       resolveCallback(true)
@@ -24,6 +27,7 @@ export const useConfirm = () => {
   }
 
   const handleCancel = () => {
+    console.log('[useConfirm] handleCancel called')
     isOpen.value = false
     if (resolveCallback) {
       resolveCallback(false)
