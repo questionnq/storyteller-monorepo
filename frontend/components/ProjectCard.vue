@@ -41,7 +41,7 @@ const props = defineProps({
   }
 })
 
-defineEmits(['click', 'delete'])
+const emit = defineEmits(['click', 'delete'])
 
 const router = useRouter()
 
