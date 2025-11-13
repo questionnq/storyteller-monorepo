@@ -68,65 +68,57 @@
       <!-- Шаг 1: Озвучка -->
       <div class="bg-base-200 rounded-lg p-6 shadow-lg mb-6">
         <h2 class="text-xl font-bold mb-4">Шаг 1: Генерация озвучки</h2>
-        
-        <button 
+
+        <button
           v-if="!audioUrl && !isGeneratingAudio"
           class="btn btn-primary"
           @click="generateVoiceover"
-          :disabled="!project.script"
+          :disabled="!project?.scenes || project.scenes.length === 0"
         >
           🎙️ Сгенерировать озвучку
         </button>
-        
-        <AppLoader 
+
+        <AppLoader
           v-else-if="isGeneratingAudio"
           title="Генерируется озвучка..."
           subtitle="Это может занять до 30 секунд"
         />
-        
-        <AudioPlayer 
+
+        <AudioPlayer
           v-else-if="audioUrl"
           :audio-url="audioUrl"
           title="Готовая озвучка"
         />
-        
-        <!-- Субтитры -->
+
+        <!-- Информация о субтитрах -->
         <div v-if="subtitles" class="mt-4 p-4 bg-base-300 rounded">
-          <h4 class="font-semibold mb-2">Сгенерированные субтитры:</h4>
-          <pre class="text-xs whitespace-pre-wrap">{{ subtitles }}</pre>
-        </div>
-      </div>
-      
-      <!-- Шаг 2: Выбор фона -->
-      <div class="bg-base-200 rounded-lg p-6 shadow-lg mb-6">
-        <h2 class="text-xl font-bold mb-4">Шаг 2: Выбор фона</h2>
-        <BackgroundSelector 
-          v-model="renderSettings.background"
-          :disabled="status === 'processing'"
-          class="mb-4"
-        />
-        <div v-if="renderSettings.background === 'minecraft'" class="alert alert-info mt-4">
-          <span>🎮 Minecraft фон идеален для игрового контента</span>
+          <h4 class="font-semibold mb-2">✅ Субтитры сгенерированы</h4>
+          <p class="text-xs opacity-70">Субтитры будут автоматически добавлены в видео</p>
         </div>
       </div>
       
       <!-- Индикатор прогресса рендера -->
-      <RenderProgress 
+      <RenderProgress
         v-if="progress > 0"
         :progress="progress"
         :progress-text="progressText"
         class="mb-6"
       />
-      
-      <!-- Шаг 3: Сборка видео -->
+
+      <!-- Шаг 2: Сборка видео -->
       <div class="bg-base-200 rounded-lg p-6 shadow-lg mb-6">
-        <h2 class="text-xl font-bold mb-4">Шаг 3: Сборка видео</h2>
-        
-        <button 
+        <h2 class="text-xl font-bold mb-4">Шаг 2: Сборка видео</h2>
+
+        <div v-if="!hasGeneratedImages" class="alert alert-warning mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+          <span>Для создания видео нужны сгенерированные изображения</span>
+        </div>
+
+        <button
           v-if="!videoUrl && status !== 'processing'"
           class="btn btn-primary btn-lg"
           @click="startRender"
-          :disabled="!audioUrl || status === 'pending'"
+          :disabled="!hasGeneratedImages"
         >
           🎬 Собрать видео
         </button>
@@ -167,9 +159,7 @@ const error = ref(null)
 const progress = ref(0)
 const progressText = ref('')
 
-const renderSettings = ref({
-  background: 'minecraft'
-})
+const renderSettings = ref({})
 
 // Вычисляемое свойство для отображения статуса
 const renderStatus = computed(() => {
@@ -277,18 +267,26 @@ const handleKeyboardShortcuts = (event) => {
 }
 
 const generateVoiceover = async () => {
-  if (!project.value) return
+  console.log('[generateVoiceover] Starting...')
+  if (!project.value) {
+    console.error('[generateVoiceover] No project loaded')
+    return
+  }
 
   isGeneratingAudio.value = true
   error.value = null
 
   try {
+    console.log('[generateVoiceover] Calling API for project:', route.params.id)
     const result = await apiGenerateVoiceover(route.params.id)
+    console.log('[generateVoiceover] Success:', result)
+
     audioUrl.value = result.voiceover_url
     subtitles.value = result.subtitle_url
     status.value = 'voiceover'
     updateCache()
   } catch (err) {
+    console.error('[generateVoiceover] Error:', err)
     handleError(err, 'generateVoiceover')
   } finally {
     isGeneratingAudio.value = false
@@ -296,15 +294,21 @@ const generateVoiceover = async () => {
 }
 
 const startRender = async () => {
+  console.log('[startRender] Starting...')
+  console.log('[startRender] Has images:', hasGeneratedImages.value)
+
   status.value = 'processing'
   error.value = null
   progress.value = 0
   progressText.value = 'Подготовка...'
-  
+
   try {
-    await apiStartRender(route.params.id, renderSettings.value)
+    console.log('[startRender] Calling API for project:', route.params.id)
+    const result = await apiStartRender(route.params.id, renderSettings.value)
+    console.log('[startRender] API response:', result)
     pollStatus(route.params.id)
   } catch (err) {
+    console.error('[startRender] Error:', err)
     handleError(err, 'startRender')
     status.value = 'failed'
   }

@@ -28,9 +28,10 @@ const props = defineProps({
 })
 
 const steps = [
-  { id: 1, title: 'Озвучка', description: 'Генерация аудио и субтитров', status: 'audio_ready' },
-  { id: 2, title: 'Сборка', description: 'Создание слайд-шоу из изображений', status: 'rendering' },
-  { id: 3, title: 'Готово', description: 'Видео готово к скачиванию', status: 'completed' }
+  { id: 1, title: 'Изображения', description: 'Раскадровка сгенерирована', status: 'pending' },
+  { id: 2, title: 'Озвучка', description: 'Генерация аудио и субтитров', status: 'audio_ready' },
+  { id: 3, title: 'Сборка', description: 'Создание слайд-шоу', status: 'rendering' },
+  { id: 4, title: 'Готово', description: 'Видео готово к скачиванию', status: 'completed' }
 ]
 
 const stepClass = (step) => {
