@@ -1,7 +1,7 @@
 ﻿annotated-doc==0.0.3
 annotated-types==0.7.0
 anyio==4.11.0
-asyncio-lru==1.1.1
+async_lru==1.0.1
 certifi==2025.10.5
 cffi==2.0.0
 charset-normalizer==3.4.4
@@ -51,5 +51,6 @@ uvicorn==0.34.3
 websockets==15.0.1
 yarg==0.1.10
 yarl==1.22.0
+
 
 
