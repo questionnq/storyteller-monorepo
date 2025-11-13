@@ -33,13 +33,28 @@
       
       <!-- Шаги процесса -->
       <RenderSteps :current-status="renderStatus" class="mb-6" />
-      
+
+      <!-- Предупреждение если нет изображений -->
+      <div v-if="!hasGeneratedImages" class="alert alert-warning mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        <div>
+          <h3 class="font-bold">Изображения не сгенерированы</h3>
+          <p class="text-sm">Для создания видео сначала сгенерируйте изображения на вкладке "Сценарий"</p>
+        </div>
+        <NuxtLink
+          :to="`/project/${route.params.id}`"
+          class="btn btn-sm"
+        >
+          Перейти к сценарию
+        </NuxtLink>
+      </div>
+
       <!-- Предпросмотр сценария -->
-      <div class="bg-base-200 rounded-lg p-6 shadow-lg mb-6" v-if="project?.script">
+      <div class="bg-base-200 rounded-lg p-6 shadow-lg mb-6" v-if="project?.scenes && project.scenes.length > 0">
         <h2 class="text-xl font-bold mb-4">📋 Предпросмотр сценария</h2>
         <div class="space-y-3 max-h-64 overflow-y-auto">
-          <div 
-            v-for="scene in project.script.scenes" 
+          <div
+            v-for="scene in project.scenes"
             :key="scene.scene_number"
             class="p-3 bg-base-300 rounded text-sm"
           >
@@ -138,7 +153,8 @@
 
 <script setup>
 const route = useRoute()
-const { generateVoiceover: apiGenerateVoiceover, startRender: apiStartRender, getRenderStatus } = useApi()
+const api = useApi()
+const { generateVoiceover: apiGenerateVoiceover, startRender: apiStartRender, getRenderStatus } = api
 const { user } = useSupabaseAuth()
 
 const project = ref(null)
@@ -163,16 +179,32 @@ const renderStatus = computed(() => {
   return 'pending'
 })
 
+// Проверяем, есть ли сгенерированные изображения
+const hasGeneratedImages = computed(() => {
+  return project.value?.scenes?.some(scene => scene.generated_image_url)
+})
+
 // Проверка кэша при монтировании
 onMounted(async () => {
   const projectId = route.params.id
-  
-  // Загружаем проект
-  project.value = await $fetch(`/api/v1/projects/${projectId}`)
-  
-  // Проверяем кэш
-  checkCachedFiles()
-  
+
+  try {
+    // Загружаем проект через useApi
+    const response = await api.getProject(projectId)
+
+    project.value = {
+      id: response.id,
+      title: response.title || 'Проект',
+      scenes: response.scenes || []
+    }
+
+    // Проверяем кэш
+    checkCachedFiles()
+  } catch (err) {
+    console.error('Ошибка загрузки проекта:', err)
+    error.value = 'Не удалось загрузить проект'
+  }
+
   // Горячие клавиши
   document.addEventListener('keydown', handleKeyboardShortcuts)
 })

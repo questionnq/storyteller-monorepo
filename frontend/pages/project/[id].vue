@@ -13,8 +13,8 @@
           📋 Сценарий
         </NuxtLink>
         
-        <NuxtLink 
-          v-if="hasGeneratedImages"
+        <NuxtLink
+          v-if="hasScenes"
           :to="`/project/${route.params.id}/render`"
           class="tab"
           :class="{ 'tab-active': route.path.includes('/render') }"
@@ -148,6 +148,17 @@
               :is-generating="imageGenerationStates[scene.id]?.isGenerating"
               @regenerate="handleRegenerateImage"
             />
+
+            <!-- Кнопка перехода на рендер -->
+            <div v-if="hasGeneratedImages" class="bg-primary/10 rounded-lg p-4 text-center border-2 border-primary/20">
+              <p class="text-sm mb-3 opacity-80">✅ Раскадровка готова!</p>
+              <NuxtLink
+                :to="`/project/${route.params.id}/render`"
+                class="btn btn-primary btn-block"
+              >
+                🎬 Перейти к рендеру видео
+              </NuxtLink>
+            </div>
           </div>
         </div>
         </div>
