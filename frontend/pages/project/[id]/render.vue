@@ -368,18 +368,25 @@ const startRender = async () => {
 
   status.value = 'processing'
   error.value = null
-  progress.value = 0
-  progressText.value = 'Подготовка...'
+  progress.value = 10
+  progressText.value = 'Запуск рендеринга...'
 
   try {
     console.log('[startRender] Calling API for project:', route.params.id)
     const result = await apiStartRender(route.params.id, renderSettings.value)
     console.log('[startRender] API response:', result)
+
+    // Обновляем прогресс после успешного запуска
+    progress.value = 20
+    progressText.value = 'Рендеринг запущен, ожидание обработки...'
+
+    // Запускаем polling для отслеживания статуса
     pollStatus(route.params.id)
   } catch (err) {
     console.error('[startRender] Error:', err)
     handleError(err, 'startRender')
     status.value = 'failed'
+    progress.value = 0
   }
 }
 
@@ -393,21 +400,26 @@ const pollStatus = async (projectId) => {
 
       // Статусы: 'pending', 'generating_audio', 'rendering_video', 'completed', 'error'
       if (renderStatus === 'completed') {
+        progress.value = 100
+        progressText.value = 'Готово!'
         videoUrl.value = result.final_video_url
         status.value = 'done'
         updateCache()
         stop()
       } else if (renderStatus === 'error') {
+        progress.value = 0
         error.value = 'Ошибка при рендеринге видео'
         status.value = 'failed'
         stop()
       } else {
         status.value = 'processing'
-        // Можно добавить прогресс бар в зависимости от статуса
+        // Обновляем прогресс бар в зависимости от статуса
         if (renderStatus === 'generating_audio') {
+          progress.value = 25
           progressText.value = 'Генерация озвучки...'
         } else if (renderStatus === 'rendering_video') {
-          progressText.value = 'Рендеринг видео...'
+          progress.value = 50
+          progressText.value = 'Рендеринг видео... Это может занять 1-2 минуты'
         }
       }
     } catch (err) {

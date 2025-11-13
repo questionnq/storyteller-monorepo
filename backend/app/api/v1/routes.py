@@ -317,6 +317,12 @@ async def delete_project_endpoint(project_id: str, user_id: str = Depends(get_cu
 
 # ========== МОДУЛЬ 2: ГЕНЕРАЦИЯ ВИДЕО ==========
 
+@router.options("/generate-voiceover/{project_id}")
+async def generate_voiceover_options(project_id: str):
+    """CORS preflight handler"""
+    return {"message": "OK"}
+
+
 @router.post("/generate-voiceover/{project_id}")
 async def generate_voiceover_endpoint(
     project_id: str,
@@ -377,14 +383,51 @@ async def generate_voiceover_endpoint(
         raise HTTPException(status_code=500, detail=f"Failed to generate voiceover: {str(e)}")
 
 
+async def _render_video_background(
+    project_id: str,
+    scenes_with_images: list,
+    voiceover_url: str,
+    subtitle_content: str,
+    duration: float,
+    background_style: str
+):
+    """
+    Фоновая задача для рендеринга видео
+    """
+    try:
+        # Создаем видео
+        video_url = await create_slideshow_video(
+            scenes=scenes_with_images,
+            voiceover_url=voiceover_url,
+            subtitle_content=subtitle_content,
+            total_duration=duration,
+            background_style=background_style
+        )
+
+        # Сохраняем URL видео
+        update_final_video_url(project_id, video_url)
+        update_render_status(project_id, "completed")
+
+    except Exception as e:
+        print(f"Background render error: {str(e)}")
+        update_render_status(project_id, "error")
+
+
+@router.options("/render-video/{project_id}")
+async def render_video_options(project_id: str):
+    """CORS preflight handler"""
+    return {"message": "OK"}
+
+
 @router.post("/render-video/{project_id}")
 async def render_video_endpoint(
     project_id: str,
+    background_tasks: BackgroundTasks,
     settings: dict = {},
     user_id: str = Depends(get_current_user)
 ):
     """
-    Создает финальное видео из сцен проекта (слайд-шоу)
+    Запускает рендеринг видео в фоновой задаче и сразу возвращает ответ
     """
     try:
         # Получаем проект и сцены
@@ -421,30 +464,29 @@ async def render_video_endpoint(
             except Exception as e:
                 print(f"Warning: Could not download subtitles: {str(e)}")
 
-        # Создаем видео
-        video_url = await create_slideshow_video(
-            scenes=scenes_with_images,
+        # Запускаем рендеринг в фоне
+        background_tasks.add_task(
+            _render_video_background,
+            project_id=project_id,
+            scenes_with_images=scenes_with_images,
             voiceover_url=voiceover_url,
             subtitle_content=subtitle_content,
-            total_duration=duration,
+            duration=duration,
             background_style=background_style
         )
 
-        # Сохраняем URL видео
-        update_final_video_url(project_id, video_url)
-        update_render_status(project_id, "completed")
-
+        # Сразу возвращаем ответ
         return {
             "success": True,
             "project_id": project_id,
-            "final_video_url": video_url
+            "message": "Rendering started. Check status at /render-status/{project_id}"
         }
 
     except HTTPException:
         raise
     except Exception as e:
         update_render_status(project_id, "error")
-        raise HTTPException(status_code=500, detail=f"Failed to render video: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to start rendering: {str(e)}")
 
 
 @router.get("/render-status/{project_id}")
