@@ -291,15 +291,20 @@ const handleUpdateScene = async (updatedScene) => {
 }
 
 const handleDeleteScene = async (sceneId) => {
+  console.log('[handleDeleteScene] Starting deletion for scene:', sceneId)
+
   const confirmed = await confirm(
     'Удалить сцену?',
     'Это действие нельзя отменить. Сцена будет удалена из проекта.'
   )
 
+  console.log('[handleDeleteScene] Confirmed:', confirmed)
   if (!confirmed) return
 
   try {
-    await apiDeleteScene(sceneId)
+    console.log('[handleDeleteScene] Calling apiDeleteScene...')
+    const result = await apiDeleteScene(sceneId)
+    console.log('[handleDeleteScene] API result:', result)
 
     project.value.scenes = project.value.scenes.filter(s => s.id !== sceneId)
 
@@ -307,8 +312,10 @@ const handleDeleteScene = async (sceneId) => {
       scene.scene_number = index + 1
     })
 
+    console.log('[handleDeleteScene] Scenes after deletion:', project.value.scenes.length)
     showSuccess('Сцена удалена')
   } catch (error) {
+    console.error('[handleDeleteScene] Error:', error)
     showError('Ошибка удаления сцены: ' + error.message)
   }
 }
