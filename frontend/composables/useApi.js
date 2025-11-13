@@ -61,7 +61,15 @@ export const useApi = () => {
 
   // ========== ПОЛУЧЕНИЕ ПРОЕКТОВ ==========
   const getUserProjects = async () => {
-    return await apiFetch('/projects')
+    try {
+      console.log('[useApi] Calling getUserProjects')
+      const result = await apiFetch('/projects')
+      console.log('[useApi] getUserProjects result:', result)
+      return result
+    } catch (error) {
+      console.error('[useApi] getUserProjects error:', error)
+      throw error
+    }
   }
 
   // ========== ПОЛУЧЕНИЕ ПРОЕКТА ==========
@@ -148,21 +156,29 @@ export const useApi = () => {
   // ========== РЕНДЕРИНГ (для будущего Модуля 2) ==========
   const generateVoiceover = async (projectId) => {
     try {
-      return await apiFetch(`/generate-voiceover/${projectId}`, {
+      console.log('[useApi] Calling generateVoiceover for project:', projectId)
+      const result = await apiFetch(`/generate-voiceover/${projectId}`, {
         method: 'POST'
       })
+      console.log('[useApi] generateVoiceover result:', result)
+      return result
     } catch (error) {
+      console.error('[useApi] generateVoiceover error:', error)
       throw new Error(error.data?.detail || 'Не удалось сгенерировать озвучку')
     }
   }
 
   const startRender = async (projectId, settings) => {
     try {
-      return await apiFetch(`/render-video/${projectId}`, {
+      console.log('[useApi] Calling startRender for project:', projectId, 'settings:', settings)
+      const result = await apiFetch(`/render-video/${projectId}`, {
         method: 'POST',
         body: settings
       })
+      console.log('[useApi] startRender result:', result)
+      return result
     } catch (error) {
+      console.error('[useApi] startRender error:', error)
       throw new Error(error.data?.detail || 'Не удалось запустить рендеринг')
     }
   }

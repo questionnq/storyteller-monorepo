@@ -38,10 +38,11 @@ async def generate_voiceover(text: str, lang: str = "ru") -> str:
         with open(temp_path, "rb") as f:
             file_data = f.read()
 
+        # Используем upsert для перезаписи файла если он уже существует
         res = supabase.storage.from_("videos").upload(
             path=file_name,
             file=file_data,
-            file_options={"content-type": "audio/mpeg"}
+            file_options={"content-type": "audio/mpeg", "upsert": "true"}
         )
 
         # Удаляем временный файл
@@ -120,10 +121,11 @@ async def upload_subtitles(srt_content: str, project_id: str) -> str:
     try:
         file_name = f"subtitles_{project_id}.srt"
 
+        # Используем upsert для перезаписи файла если он уже существует
         res = supabase.storage.from_("videos").upload(
             path=file_name,
             file=srt_content.encode('utf-8'),
-            file_options={"content-type": "text/plain"}
+            file_options={"content-type": "text/plain", "upsert": "true"}
         )
 
         public_url = supabase.storage.from_("videos").get_public_url(file_name)

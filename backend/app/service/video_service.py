@@ -160,10 +160,11 @@ async def create_slideshow_video(
         with open(output_temp.name, "rb") as f:
             file_data = f.read()
 
+        # Используем upsert для перезаписи файла если он уже существует
         res = supabase.storage.from_("videos").upload(
             path=file_name,
             file=file_data,
-            file_options={"content-type": "video/mp4"}
+            file_options={"content-type": "video/mp4", "upsert": "true"}
         )
 
         # Получаем публичный URL
