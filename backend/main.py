@@ -9,10 +9,12 @@ app = FastAPI(title="Script Generator")
 
 class CustomCORSMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        origin = request.headers.get("origin")
-
+        print(f"[CORS] ===== MIDDLEWARE CALLED =====")
         print(f"[CORS] Request: {request.method} {request.url.path}")
+
+        origin = request.headers.get("origin")
         print(f"[CORS] Origin: {origin}")
+        print(f"[CORS] Headers: {dict(request.headers)}")
 
         # Список разрешенных origins
         allowed_origins = [
@@ -36,12 +38,16 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
             # Для preflight запросов (OPTIONS)
             if request.method == "OPTIONS":
                 print(f"[CORS] Handling OPTIONS preflight")
-                response = Response()
+                response = Response(status_code=200)
                 response.headers["Access-Control-Allow-Origin"] = origin
                 response.headers["Access-Control-Allow-Credentials"] = "true"
-                response.headers["Access-Control-Allow-Methods"] = "*"
-                response.headers["Access-Control-Allow-Headers"] = "*"
+                response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+                response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, Origin, User-Agent"
                 response.headers["Access-Control-Expose-Headers"] = "*"
+                response.headers["Access-Control-Max-Age"] = "3600"
+                response.headers["Content-Length"] = "0"
+                response.headers["Vary"] = "Origin"
+                print(f"[CORS] OPTIONS response headers: {dict(response.headers)}")
                 return response
 
             # Для обычных запросов
@@ -50,11 +56,15 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Expose-Headers"] = "*"
+            response.headers["Vary"] = "Origin"
+            print(f"[CORS] Regular response status: {response.status_code}")
             return response
 
         # Если origin не разрешен, продолжаем без CORS headers
-        print(f"[CORS] Origin not allowed, proceeding without CORS headers")
-        return await call_next(request)
+        print(f"[CORS] Origin not allowed: {origin}, proceeding without CORS headers")
+        response = await call_next(request)
+        print(f"[CORS] Response sent without CORS headers, status: {response.status_code}")
+        return response
 
 
 app.add_middleware(CustomCORSMiddleware)
