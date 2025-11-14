@@ -4,52 +4,84 @@
     
     <main class="container mx-auto px-4 py-6 max-w-7xl">
       <!-- Табы навигации -->
-      <div class="tabs tabs-boxed mb-6">
+      <div class="flex gap-2 mb-6">
         <NuxtLink 
           :to="`/project/${route.params.id}`"
-          class="tab"
-          :class="{ 'tab-active': !route.path.includes('/render') }"
+          class="px-5 py-3 rounded-xl font-medium relative group transition-colors"
+          :class="{
+            'text-yellow-200': !route.path.includes('/render'),
+            'text-slate-400 hover:text-slate-200': route.path.includes('/render')
+          }"
         >
-          📋 Сценарий
+          <div class="flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="16,10 12,14 8,10" />
+            </svg>
+            Сценарий
+          </div>
+          <div 
+            v-if="!route.path.includes('/render')"
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 rounded-full"
+          ></div>
         </NuxtLink>
         
         <NuxtLink
           v-if="hasScenes"
           :to="`/project/${route.params.id}/render`"
-          class="tab"
-          :class="{ 'tab-active': route.path.includes('/render') }"
+          class="px-5 py-3 rounded-xl font-medium relative group transition-colors"
+          :class="{
+            'text-yellow-200': route.path.includes('/render'),
+            'text-slate-400 hover:text-slate-200': !route.path.includes('/render')
+          }"
         >
-          🎬 Рендер
+          <div class="flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polygon points="7,21 7,10 12,6 17,10 17,21" />
+              <path d="M12,18L12,6" />
+            </svg>
+            Рендер
+          </div>
+          <div 
+            v-if="route.path.includes('/render')"
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 rounded-full"
+          ></div>
         </NuxtLink>
       </div>
       
       <!-- Шапка проекта -->
-      <div class="bg-base-200 rounded-lg p-5 mb-6 shadow-lg">
+      <div 
+        class="bg-slate-800/40 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-slate-700/50 fade-in-up"
+        style="animation-delay: 0.1s"
+      >
         <input 
           v-model="project.title"
-          class="input input-ghost text-2xl font-bold w-full mb-3"
+          class="input input-transparent text-2xl font-bold w-full mb-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-yellow-400 focus:border-b-2"
           placeholder="Название проекта"
           @blur="saveProjectMetadata"
         />
         <textarea 
           v-model="project.description"
-          class="textarea textarea-ghost w-full text-sm"
+          class="textarea textarea-transparent w-full text-sm text-slate-300 placeholder-slate-500 focus:outline-none focus:border-yellow-400 focus:border-b"
           placeholder="Ваша идея для видео..."
           rows="2"
           @blur="saveProjectMetadata"
         ></textarea>
         
         <!-- Настройки -->
-        <div class="grid md:grid-cols-3 gap-4 mt-5">
-          <div class="bg-base-100 rounded-lg p-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xl">🎯</span>
-              <label class="text-sm font-bold">Тон сценария</label>
+        <div class="grid md:grid-cols-3 gap-4 mt-6">
+          <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
+            <div class="flex items-center gap-2 mb-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-yellow-400/80">
+                <path d="M12 3v6m0 0l4-4m-4 4l-4-4" />
+                <circle cx="12" cy="15" r="8" />
+              </svg>
+              <label class="text-sm font-bold text-slate-200">Тон сценария</label>
             </div>
             <input
               v-model="project.settings.tone"
               type="text"
-              class="input input-bordered w-full"
+              class="input input-transparent w-full text-slate-200 placeholder-slate-500 focus:outline-none focus:border-yellow-400 focus:border-b border-b border-slate-700/50"
               placeholder="юмористический..."
               :disabled="hasScenes"
               :class="{ 'opacity-60 cursor-not-allowed': hasScenes }"
@@ -57,15 +89,24 @@
             />
           </div>
 
-          <div class="bg-base-100 rounded-lg p-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xl">🎨</span>
-              <label class="text-sm font-bold">Визуальный стиль</label>
+          <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
+            <div class="flex items-center gap-2 mb-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-purple-400/80">
+                <path d="M17 3a2 2 0 1 1-4 0" />
+                <path d="M11 3a2 2 0 1 0 4 0" />
+                <path d="M6 20a2 2 0 1 1-4 0" />
+                <path d="M3 10a2 2 0 1 0 4 0" />
+                <path d="M21 20a2 2 0 1 1-4 0" />
+                <path d="M17 10a2 2 0 1 0 4 0" />
+                <path d="M12 13a6 6 0 1 0 0-12 6 6 0 0 0 0 12z" />
+                <path d="M12 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+              </svg>
+              <label class="text-sm font-bold text-slate-200">Визуальный стиль</label>
             </div>
             <input
               v-model="project.settings.style"
               type="text"
-              class="input input-bordered w-full"
+              class="input input-transparent w-full text-slate-200 placeholder-slate-500 focus:outline-none focus:border-yellow-400 focus:border-b border-b border-slate-700/50"
               placeholder="кинематографичный..."
               :disabled="hasScenes"
               :class="{ 'opacity-60 cursor-not-allowed': hasScenes }"
@@ -73,15 +114,18 @@
             />
           </div>
 
-          <div class="bg-base-100 rounded-lg p-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xl">⏱️</span>
-              <label class="text-sm font-bold">Длительность (сек)</label>
+          <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
+            <div class="flex items-center gap-2 mb-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-blue-400/80">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12,6 12,12 16,14" />
+              </svg>
+              <label class="text-sm font-bold text-slate-200">Длительность (сек)</label>
             </div>
             <input
               v-model.number="project.settings.duration"
               type="number"
-              class="input input-bordered w-full"
+              class="input input-transparent w-full text-slate-200 placeholder-slate-500 focus:outline-none focus:border-yellow-400 focus:border-b border-b border-slate-700/50"
               placeholder="30"
               :disabled="hasScenes"
               :class="{ 'opacity-60 cursor-not-allowed': hasScenes }"
@@ -92,75 +136,101 @@
       </div>
       
       <!-- Генерация сценария -->
-      <div v-if="!project.scenes || project.scenes.length === 0" class="bg-base-200 rounded-lg p-8 mb-6 text-center">
-        <div class="text-6xl mb-4">✨</div>
-        <h2 class="text-2xl font-bold mb-4">Генерация сценария</h2>
-        <p class="mb-6 opacity-70">
+      <div 
+        v-if="!project.scenes || project.scenes.length === 0" 
+        class="bg-slate-800/40 backdrop-blur-sm rounded-2xl p-8 mb-6 text-center border border-slate-700/50 fade-in"
+        style="animation-delay: 0.2s"
+      >
+        <div class="inline-block mb-4">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="text-yellow-400/60">
+            <path d="M12 3v6m0 0l4-4m-4 4l-4-4" />
+            <circle cx="12" cy="15" r="8" />
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-100 mb-4">Генерация сценария</h2>
+        <p class="mb-6 text-slate-300">
           Опишите вашу идею выше и нажмите кнопку
         </p>
         <button
-          class="btn btn-primary btn-lg"
+          class="btn btn-van-gogh-primary px-6 py-3 rounded-xl font-medium"
           @click="handleGenerateScript"
           :disabled="generatingScript"
         >
-          <span class="loading loading-spinner" v-if="generatingScript"></span>
-          {{ generatingScript ? 'Генерирую...' : '📝 Сгенерировать сценарий' }}
+          <span class="loading loading-spinner loading-sm" v-if="generatingScript"></span>
+          {{ generatingScript ? 'Генерирую...' : 'Сгенерировать сценарий' }}
         </button>
       </div>
 
       <!-- Редактор сцен и картинок -->
-      <div v-else class="space-y-6">
-        <!-- Кнопка генерации всех картинок (если еще не сгенерированы) -->
-        <div v-if="!hasGeneratedImages" class="bg-base-200 rounded-lg p-6 text-center">
+      <div v-else class="space-y-6 fade-in" style="animation-delay: 0.2s">
+        <!-- Кнопка генерации всех картинок -->
+        <div 
+          v-if="!hasGeneratedImages" 
+          class="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-6 text-center border border-slate-700/40 fade-in"
+          style="animation-delay: 0.3s"
+        >
           <button
-            class="btn btn-secondary btn-lg"
+            class="btn btn-van-gogh-outline px-6 py-3 rounded-xl font-medium"
             @click="generateAllImages"
             :disabled="generatingImages"
           >
-            <span class="loading loading-spinner" v-if="generatingImages"></span>
-            {{ generatingImages ? 'Генерирую картинки...' : '🎨 Сгенерировать все картинки' }}
+            <span class="loading loading-spinner loading-sm" v-if="generatingImages"></span>
+            {{ generatingImages ? 'Генерирую картинки...' : 'Сгенерировать все картинки' }}
           </button>
         </div>
 
         <div class="grid lg:grid-cols-2 gap-6">
-        <!-- Левая колонка: Сцены -->
-        <div class="space-y-5">
-          <h2 class="text-xl font-bold px-1">📋 Сцены</h2>
-          <SceneEditor 
-            v-for="scene in project.scenes"
-            :key="scene.id"
-            :scene="scene"
-            :is-generating-image="imageGenerationStates[scene.id]?.isGenerating"
-            @update="handleUpdateScene"
-            @delete="handleDeleteScene"
-            @regenerate-image="handleRegenerateImage"
-          />
-        </div>
-        
-        <!-- Правая колонка: Картинки -->
-        <div>
-          <h2 class="text-xl font-bold mb-4 px-1">🖼️ Раскадровка</h2>
-          <div class="space-y-5 sticky top-4">
-            <ImageGenerator
-              v-for="scene in project.scenes"
-              :key="`image-${scene.id}`"
+          <!-- Сцены -->
+          <div class="space-y-5">
+            <h2 class="text-xl font-bold text-slate-100 px-1 fade-in" style="animation-delay: 0.3s">Сцены</h2>
+            <SceneEditor 
+              v-for="(scene, index) in project.scenes"
+              :key="scene.id"
               :scene="scene"
-              :is-generating="imageGenerationStates[scene.id]?.isGenerating"
-              @regenerate="handleRegenerateImage"
+              :is-generating-image="imageGenerationStates[scene.id]?.isGenerating"
+              @update="handleUpdateScene"
+              @delete="handleDeleteScene"
+              @regenerate-image="handleRegenerateImage"
+              class="fade-in-up"
+              :style="{ animationDelay: `${0.4 + index * 0.05}s` }"
             />
+          </div>
+          
+          <!-- Раскадровка -->
+          <div>
+            <h2 class="text-xl font-bold text-slate-100 mb-4 px-1 fade-in" style="animation-delay: 0.3s">Раскадровка</h2>
+            <div class="space-y-5 sticky top-4">
+              <ImageGenerator
+                v-for="(scene, index) in project.scenes"
+                :key="`image-${scene.id}`"
+                :scene="scene"
+                :is-generating="imageGenerationStates[scene.id]?.isGenerating"
+                @regenerate="handleRegenerateImage"
+                class="fade-in-up"
+                :style="{ animationDelay: `${0.5 + index * 0.05}s` }"
+              />
 
-            <!-- Кнопка перехода на рендер -->
-            <div v-if="hasGeneratedImages" class="bg-primary/10 rounded-lg p-4 text-center border-2 border-primary/20">
-              <p class="text-sm mb-3 opacity-80">✅ Раскадровка готова!</p>
-              <NuxtLink
-                :to="`/project/${route.params.id}/render`"
-                class="btn btn-primary btn-block"
+              <div 
+                v-if="hasGeneratedImages" 
+                class="bg-gradient-to-r from-yellow-500/10 to-blue-500/10 rounded-xl p-5 text-center border border-yellow-400/30 fade-in-up"
+                style="animation-delay: 0.7s"
               >
-                🎬 Перейти к рендеру видео
-              </NuxtLink>
+              <div class="flex items-center justify-center gap-2 text-sm text-slate-300 mb-3">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-400">
+                  <path d="M9 12l2 2 4-4" />
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
+                Раскадровка готова!
+              </div>
+                <NuxtLink
+                  :to="`/project/${route.params.id}/render`"
+                  class="btn btn-van-gogh-primary w-full"
+                >
+                  Перейти к рендеру видео
+                </NuxtLink>
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </main>
@@ -365,3 +435,25 @@ const saveProjectMetadata = async () => {
   }
 }
 </script>
+
+<style scoped>
+.fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+  opacity: 0;
+}
+.fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@keyframes fade-in {
+  to { opacity: 1; }
+}
+@keyframes fade-in-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
