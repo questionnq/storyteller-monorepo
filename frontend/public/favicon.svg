@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Золотая звезда -->
+  <path d="M32 10l6.2 18.8h19.8l-16 11.6 6 18.8-16-11.6-16 11.6 6-18.8-16-11.6h19.8z" fill="#fde047"/>
+  
+  <!-- Сценарий (документ с текстом) -->
+  <path d="M44 36h-16M44 42h-10M44 48h-6" stroke="#1e1b4b" stroke-width="3" stroke-linecap="round"/>
+</svg>
