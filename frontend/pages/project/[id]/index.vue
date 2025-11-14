@@ -352,25 +352,46 @@ const generateAllImages = async () => {
       // Перезагружаем проект чтобы получить обновлённые URL картинок
       const updatedProject = await apiGetProject(project.value.id)
 
-      // Обновляем URL картинок
+      // Обновляем URL картинок - заменяем весь массив scenes для триггера реактивности
       let allGenerated = true
       let generatedCount = 0
 
-      updatedProject.scenes.forEach((updatedScene, index) => {
-        const currentScene = project.value.scenes.find(s => s.id === updatedScene.id)
+      // Создаём новый массив scenes с обновлёнными URL
+      const updatedScenes = project.value.scenes.map(currentScene => {
+        const updatedScene = updatedProject.scenes.find(s => s.id === currentScene.id)
 
-        if (currentScene) {
-          // Обновляем URL
-          currentScene.generated_image_url = updatedScene.generated_image_url
+        if (updatedScene) {
+          const oldUrl = currentScene.generated_image_url
+          const newUrl = updatedScene.generated_image_url
+
+          // Логируем изменения
+          if (oldUrl !== newUrl) {
+            console.log(`[pollImages] Scene ${currentScene.scene_number} URL updated:`, {
+              old: oldUrl ? oldUrl.substring(0, 50) + '...' : 'null',
+              new: newUrl ? newUrl.substring(0, 50) + '...' : 'null'
+            })
+          }
 
           // Проверяем, сгенерирована ли картинка
-          if (updatedScene.generated_image_url && !updatedScene.generated_image_url.includes('placehold.co')) {
+          if (newUrl && !newUrl.includes('placehold.co')) {
             generatedCount++
           } else {
             allGenerated = false
           }
+
+          // Возвращаем обновлённый объект сцены
+          return {
+            ...currentScene,
+            generated_image_url: newUrl
+          }
         }
+
+        allGenerated = false
+        return currentScene
       })
+
+      // ВАЖНО: Заменяем весь массив для триггера реактивности Vue
+      project.value.scenes = updatedScenes
 
       console.log(`[pollImages] Generated ${generatedCount}/${project.value.scenes.length} images`)
 
