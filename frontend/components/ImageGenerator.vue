@@ -4,17 +4,36 @@
     <div class="flex justify-between items-center mb-4">
       <span class="text-sm font-bold text-slate-200">Сцена {{ scene.scene_number }}</span>
       <div class="flex gap-2">
-        <select 
-          v-model="selectedStyle" 
-          class="select select-sm bg-slate-800/60 border border-slate-700/50 text-slate-200 rounded-lg focus:outline-none focus:border-yellow-400 pl-3 pr-8"
-        >
-          <option value="" class="bg-slate-800 text-slate-200">Стандартный</option>
-          <option value="cinematic" class="bg-slate-800 text-slate-200">Кинематографичный</option>
-          <option value="cartoon" class="bg-slate-800 text-slate-200">Мультфильм</option>
-          <option value="pixel art" class="bg-slate-800 text-slate-200">Пиксель-арт</option>
-          <option value="realistic" class="bg-slate-800 text-slate-200">Реалистичный</option>
-          <option value="minimalist" class="bg-slate-800 text-slate-200">Минимализм</option>
-        </select>
+        <!-- Кастомный селект -->
+        <div class="relative" ref="styleSelect">
+          <button 
+            @click="toggleStyleMenu"
+            class="flex items-center gap-2 px-3 py-1.5 bg-slate-800/60 border border-slate-700/50 text-slate-200 rounded-lg focus:outline-none focus:border-yellow-400 transition-colors w-full justify-between"
+          >
+            <span>{{ selectedStyleLabel }}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-400">
+              <polyline points="6,9 12,15 18,9" />
+            </svg>
+          </button>
+
+          <!-- Выпадающее меню -->
+          <div 
+            v-show="isStyleMenuOpen"
+            class="absolute z-10 mt-1 w-full bg-slate-800/90 backdrop-blur-sm rounded-lg border border-slate-700/50 shadow-lg overflow-hidden"
+          >
+            <button
+              v-for="option in styleOptions"
+              :key="option.value"
+              @click="selectStyle(option.value)"
+              class="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-yellow-400/10 hover:text-yellow-200 transition-colors flex items-center gap-2"
+            >
+              <svg v-if="option.value === selectedStyle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-yellow-400">
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+              <span>{{ option.label }}</span>
+            </button>
+          </div>
+        </div>
         <button 
           class="btn btn-sm w-10 h-10 p-0 rounded-full flex items-center justify-center bg-gradient-to-r from-yellow-400 to-blue-500 text-white border-0 shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
           @click="regenerateWithStyle"
@@ -117,7 +136,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   scene: {
@@ -133,6 +152,16 @@ const props = defineProps({
 const emit = defineEmits(['regenerate'])
 
 const selectedStyle = ref('')
+const isStyleMenuOpen = ref(false)
+const styleOptions = [
+  { value: '', label: 'Стандартный' },
+  { value: 'cinematic', label: 'Кинематографичный' },
+  { value: 'cartoon', label: 'Мультфильм' },
+  { value: 'pixel art', label: 'Пиксель-арт' },
+  { value: 'realistic', label: 'Реалистичный' },
+  { value: 'minimalist', label: 'Минимализм' }
+]
+
 const progressText = ref('Обрабатываю запрос...')
 const error = ref(null)
 const imageLoading = ref(false)
@@ -180,6 +209,47 @@ const regenerateWithStyle = () => {
     style: selectedStyle.value || null
   })
 }
+
+const selectedStyleLabel = computed(() => {
+  return styleOptions.find(opt => opt.value === selectedStyle.value)?.label || 'Стандартный'
+})
+
+// Для закрытия по клику вне
+const styleSelect = ref(null)
+
+const handleClickOutside = (event) => {
+  if (styleSelect.value && !styleSelect.value.contains(event.target)) {
+    isStyleMenuOpen.value = false
+  }
+}
+
+const toggleStyleMenu = () => {
+  isStyleMenuOpen.value = !isStyleMenuOpen.value
+  if (isStyleMenuOpen.value) {
+    setTimeout(() => {
+      window.addEventListener('click', handleClickOutside)
+    }, 0)
+  } else {
+    window.removeEventListener('click', handleClickOutside)
+  }
+}
+
+const selectStyle = (value) => {
+  selectedStyle.value = value
+  isStyleMenuOpen.value = false
+  window.removeEventListener('click', handleClickOutside)
+}
+
+onMounted(() => {
+  // Восстанавливаем значение из пропсов при монтировании
+  if (props.scene?.visual_prompt?.includes('cinematic')) selectedStyle.value = 'cinematic'
+  // ...можно добавить логику определения стиля из промпта, но пока оставим как есть
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside)
+})
+
 </script>
 
 <style scoped>

@@ -14,7 +14,7 @@
           }"
         >
           <div class="flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-yellow-400">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
               <polyline points="16,10 12,14 8,10" />
             </svg>
@@ -36,9 +36,9 @@
           }"
         >
           <div class="flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-              <polygon points="7,21 7,10 12,6 17,10 17,21" />
-              <path d="M12,18L12,6" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-yellow-400">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="16,10 12,14 8,10" />
             </svg>
             Рендер
           </div>
@@ -56,37 +56,85 @@
       >
         <input 
           v-model="project.title"
-          class="input input-transparent text-2xl font-bold w-full mb-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-yellow-400 focus:border-b-2"
+          class="w-full text-2xl font-bold mb-3 text-slate-100"
           placeholder="Название проекта"
           @blur="saveProjectMetadata"
         />
         <textarea 
           v-model="project.description"
-          class="textarea textarea-transparent w-full text-sm text-slate-300 placeholder-slate-500 focus:outline-none focus:border-yellow-400 focus:border-b"
+          class="w-full text-sm text-slate-300 placeholder-slate-500 bg-transparent border-0 focus:outline-none focus:border-yellow-400 focus:border-b pb-2"
           placeholder="Ваша идея для видео..."
           rows="2"
           @blur="saveProjectMetadata"
         ></textarea>
         
-        <!-- Настройки -->
-        <div class="grid md:grid-cols-3 gap-4 mt-6">
-          <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
-            <div class="flex items-center gap-2 mb-3">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-yellow-400/80">
-                <path d="M12 3v6m0 0l4-4m-4 4l-4-4" />
-                <circle cx="12" cy="15" r="8" />
-              </svg>
-              <label class="text-sm font-bold text-slate-200">Тон сценария</label>
+                  <!-- Настройки -->
+          <div class="grid md:grid-cols-3 gap-4 mt-6">
+            <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
+              <div class="flex items-center gap-2.5 mb-3">
+                <!-- Иконка: золотая кисть -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-yellow-400">
+                  <path d="M12 3v6m0 0l4-4m-4 4l-4-4" />
+                  <circle cx="12" cy="15" r="8" />
+                </svg>
+                <label class="text-sm font-bold text-slate-200">Тон сценария</label>
+              </div>
+              <input
+                v-model="project.settings.tone"
+                type="text"
+                class="w-full text-slate-200 placeholder-slate-500 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-colors"
+                placeholder="юмористический..."
+                :disabled="hasScenes"
+                :class="{ 'opacity-60 cursor-not-allowed': hasScenes }"
+                @blur="saveProjectMetadata"
+              />
             </div>
-            <input
-              v-model="project.settings.tone"
-              type="text"
-              class="input input-transparent w-full text-slate-200 placeholder-slate-500 focus:outline-none focus:border-yellow-400 focus:border-b border-b border-slate-700/50"
-              placeholder="юмористический..."
-              :disabled="hasScenes"
-              :class="{ 'opacity-60 cursor-not-allowed': hasScenes }"
-              @blur="saveProjectMetadata"
-            />
+
+            <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
+              <div class="flex items-center gap-2.5 mb-3">
+                <!-- Иконка: лавандовая палитра -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-purple-400">
+                  <path d="M17 3a2 2 0 1 1-4 0" />
+                  <path d="M11 3a2 2 0 1 0 4 0" />
+                  <path d="M6 20a2 2 0 1 1-4 0" />
+                  <path d="M3 10a2 2 0 1 0 4 0" />
+                  <path d="M21 20a2 2 0 1 1-4 0" />
+                  <path d="M17 10a2 2 0 1 0 4 0" />
+                  <path d="M12 13a6 6 0 1 0 0-12 6 6 0 0 0 0 12z" />
+                  <path d="M12 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                </svg>
+                <label class="text-sm font-bold text-slate-200">Визуальный стиль</label>
+              </div>
+              <input
+                v-model="project.settings.style"
+                type="text"
+                class="w-full text-slate-200 placeholder-slate-500 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-colors"
+                placeholder="кинематографичный..."
+                :disabled="hasScenes"
+                :class="{ 'opacity-60 cursor-not-allowed': hasScenes }"
+                @blur="saveProjectMetadata"
+              />
+            </div>
+
+            <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
+              <div class="flex items-center gap-2.5 mb-3">
+                <!-- Иконка: бирюзовые часы -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-cyan-400">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12,6 12,12 16,14" />
+                </svg>
+                <label class="text-sm font-bold text-slate-200">Длительность (сек)</label>
+              </div>
+              <input
+                v-model.number="project.settings.duration"
+                type="number"
+                class="w-full text-slate-200 placeholder-slate-500 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-colors"
+                placeholder="30"
+                :disabled="hasScenes"
+                :class="{ 'opacity-60 cursor-not-allowed': hasScenes }"
+                @blur="saveProjectMetadata"
+              />
+            </div>
           </div>
 
           <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
@@ -135,6 +183,7 @@
         </div>
       </div>
       
+      
       <!-- Генерация сценария -->
       <div 
         v-if="!project.scenes || project.scenes.length === 0" 
@@ -142,7 +191,7 @@
         style="animation-delay: 0.2s"
       >
         <div class="inline-block mb-4">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="text-yellow-400/60">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="mr-2">
             <path d="M12 3v6m0 0l4-4m-4 4l-4-4" />
             <circle cx="12" cy="15" r="8" />
           </svg>
