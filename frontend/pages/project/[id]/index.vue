@@ -81,6 +81,8 @@
                   <path d="M9.5 8.5a1 1 0 1 1-2 0 1 1 0 1 1 2 0z" />
                   <path d="M16.5 8.5a1 1 0 1 1-2 0 1 1 0 1 1 2 0z" />
                 </svg>
+                <label class="text-sm font-bold text-slate-200">Визуальный стиль</label>
+              </div>
                 <input
                   v-model="project.settings.tone"
                   type="text"
@@ -91,7 +93,7 @@
                   @blur="saveProjectMetadata"
                 />
               </div>
-            </div>
+            
 
             <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
               <div class="flex items-center gap-2.5 mb-3">

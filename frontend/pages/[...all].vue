@@ -153,7 +153,19 @@ const scriptFragmentTexts = [
 ]
 
 // Динамические фрагменты с позициями
-const scriptFragments = ref([])
+const scriptFragments = ref(
+  scriptFragmentTexts.map((text, index) => ({
+    text,
+    x: 0,
+    y: 0,
+    opacity: 0,
+    speed: 0.01,
+    offsetX: 0,
+    offsetY: 0,
+    delay: index * 0.1,
+    initial: true
+  }))
+)
 
 // Области для размещения фрагментов (в процентах)
 const safeZone = computed(() => {
