@@ -81,7 +81,7 @@
                   <path d="M9.5 8.5a1 1 0 1 1-2 0 1 1 0 1 1 2 0z" />
                   <path d="M16.5 8.5a1 1 0 1 1-2 0 1 1 0 1 1 2 0z" />
                 </svg>
-                <label class="text-sm font-bold text-slate-200">Визуальный стиль</label>
+                <label class="text-sm font-bold text-slate-200">Тон сценария</label>
               </div>
                 <input
                   v-model="project.settings.tone"
