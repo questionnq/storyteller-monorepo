@@ -103,23 +103,49 @@ async def get_project_endpoint(project_id: str, user_id: str = Depends(get_curre
 # ========== ГЕНЕРАЦИЯ ВСЕХ ИЗОБРАЖЕНИЙ ==========
 @router.post("/generate-image/{project_id}")
 async def generate_images(project_id: str, user_id: str = Depends(get_current_user)):
+    print(f"\n[GENERATE_IMAGES] Starting image generation for project: {project_id}")
+
     scenes = get_visual_promt_by_project(project_id)
+    print(f"[GENERATE_IMAGES] Found {len(scenes) if scenes else 0} scenes")
 
     if not scenes:
         raise HTTPException(status_code=404, detail="No scenes found for this project")
-    
+
     result = []
 
-    for scene in scenes:
+    for idx, scene in enumerate(scenes):
+        scene_id = scene["id"]
         promt = scene.get("visual_prompt")
-        image_url = await generate_image(promt)
-        update_scene_image_url(scene["id"], image_url)
-        result.append({
-            "scene_id": scene["id"],
-            "promt": promt,
-            "generated_image_url": image_url
-        })
 
+        print(f"\n[GENERATE_IMAGES] === Scene {idx + 1}/{len(scenes)} ===")
+        print(f"[GENERATE_IMAGES] Scene ID: {scene_id}")
+        print(f"[GENERATE_IMAGES] Prompt: {promt[:100]}...")
+
+        try:
+            image_url = await generate_image(promt)
+            print(f"[GENERATE_IMAGES] Generated URL: {image_url}")
+
+            update_scene_image_url(scene_id, image_url)
+            print(f"[GENERATE_IMAGES] ✓ Scene {scene_id} updated with image URL")
+
+            result.append({
+                "scene_id": scene_id,
+                "promt": promt,
+                "generated_image_url": image_url
+            })
+        except Exception as e:
+            print(f"[GENERATE_IMAGES] ✗ Error for scene {scene_id}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            # Продолжаем со следующей сценой
+            result.append({
+                "scene_id": scene_id,
+                "promt": promt,
+                "generated_image_url": None,
+                "error": str(e)
+            })
+
+    print(f"\n[GENERATE_IMAGES] Completed! Generated {len(result)} images")
     return {
         "project_id": project_id,
         "scenes": result
