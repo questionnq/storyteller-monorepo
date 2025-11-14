@@ -405,10 +405,22 @@ const pollStatus = async (projectId) => {
       if (renderStatus === 'completed') {
         progress.value = 100
         progressText.value = 'Готово!'
+
+        console.log('[pollStatus] ===== RENDER COMPLETED =====')
+        console.log('[pollStatus] Full result object:', JSON.stringify(result, null, 2))
+        console.log('[pollStatus] final_video_url from result:', result.final_video_url)
+        console.log('[pollStatus] Type of final_video_url:', typeof result.final_video_url)
+        console.log('[pollStatus] Is null?:', result.final_video_url === null)
+        console.log('[pollStatus] Is undefined?:', result.final_video_url === undefined)
+        console.log('[pollStatus] Is empty string?:', result.final_video_url === '')
+
         videoUrl.value = result.final_video_url
+        console.log('[pollStatus] videoUrl.value set to:', videoUrl.value)
+
         status.value = 'done'
         updateCache()
-        console.log('[pollStatus] Render completed! Video URL:', videoUrl.value)
+        console.log('[pollStatus] Cache updated')
+        console.log('[pollStatus] ==========================')
         stop()
       } else if (renderStatus === 'error') {
         progress.value = 0
