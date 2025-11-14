@@ -14,9 +14,11 @@
           }"
         >
           <div class="flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-yellow-400">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="1.8">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="16,10 12,14 8,10" />
+              <path d="M8 8h8" />
+              <path d="M8 12h6" />
+              <path d="M8 16h5" />
             </svg>
             Сценарий
           </div>
@@ -36,9 +38,9 @@
           }"
         >
           <div class="flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-yellow-400">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="16,10 12,14 8,10" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#67e8f9" stroke-width="1.8">
+              <path d="M21 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12l4 4v10a2 2 0 0 1-2 2z" />
+              <path d="M10 10l4 4-4 4" />
             </svg>
             Рендер
           </div>
@@ -56,7 +58,7 @@
       >
         <input 
           v-model="project.title"
-          class="w-full text-2xl font-bold mb-3 text-slate-100"
+          class="w-full text-2xl font-bold mb-3 text-slate-100 placeholder-slate-500 bg-transparent border-0 focus:outline-none focus:border-yellow-400 focus:border-b-2 pb-2"
           placeholder="Название проекта"
           @blur="saveProjectMetadata"
         />
@@ -73,7 +75,7 @@
             <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
               <div class="flex items-center gap-2.5 mb-3">
                 <!-- Иконка: золотая кисть -->
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-yellow-400">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="1.6">
                   <path d="M12 3v6m0 0l4-4m-4 4l-4-4" />
                   <circle cx="12" cy="15" r="8" />
                 </svg>
@@ -93,15 +95,14 @@
             <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/40">
               <div class="flex items-center gap-2.5 mb-3">
                 <!-- Иконка: лавандовая палитра -->
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-purple-400">
-                  <path d="M17 3a2 2 0 1 1-4 0" />
-                  <path d="M11 3a2 2 0 1 0 4 0" />
-                  <path d="M6 20a2 2 0 1 1-4 0" />
-                  <path d="M3 10a2 2 0 1 0 4 0" />
-                  <path d="M21 20a2 2 0 1 1-4 0" />
-                  <path d="M17 10a2 2 0 1 0 4 0" />
-                  <path d="M12 13a6 6 0 1 0 0-12 6 6 0 0 0 0 12z" />
-                  <path d="M12 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="1.6">
+                  <circle cx="6" cy="10" r="2" />
+                  <circle cx="18" cy="10" r="2" />
+                  <circle cx="12" cy="6" r="2" />
+                  <circle cx="6" cy="18" r="2" />
+                  <circle cx="18" cy="18" r="2" />
+                  <circle cx="12" cy="18" r="2" />
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
                 </svg>
                 <label class="text-sm font-bold text-slate-200">Визуальный стиль</label>
               </div>
@@ -148,9 +149,8 @@
         style="animation-delay: 0.2s"
       >
         <div class="inline-block mb-4">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="mr-2">
-            <path d="M12 3v6m0 0l4-4m-4 4l-4-4" />
-            <circle cx="12" cy="15" r="8" />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="1.8">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>
         </div>
         <h2 class="text-2xl font-bold text-slate-100 mb-4">Генерация сценария</h2>
