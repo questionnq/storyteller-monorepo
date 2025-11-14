@@ -118,6 +118,7 @@ async def generate_voiceover(text: str, lang: str = "ru", speed: float = 1.3) ->
 def generate_subtitles(text: str, duration: float) -> str:
     """
     Генерирует простые субтитры в формате SRT
+    Разделяет текст на короткие фразы для лучшей читаемости
 
     Args:
         text: Текст для субтитров
@@ -126,20 +127,34 @@ def generate_subtitles(text: str, duration: float) -> str:
     Returns:
         str: Содержимое SRT файла
     """
-    # Простая генерация: разбиваем текст по предложениям
+    # Сначала разбиваем по предложениям
     sentences = text.replace("! ", "!|").replace("? ", "?|").replace(". ", ".|").split("|")
     sentences = [s.strip() for s in sentences if s.strip()]
 
-    if not sentences:
+    # Затем разбиваем длинные предложения на короткие фразы (по запятым и союзам)
+    phrases = []
+    for sentence in sentences:
+        # Если предложение длинное (>60 символов), разбиваем его
+        if len(sentence) > 60:
+            # Разбиваем по запятым, союзам "и", "но", "а"
+            parts = sentence.replace(", ", ",|").replace(" и ", " и|").replace(" но ", " но|").replace(" а ", " а|").split("|")
+            for part in parts:
+                part = part.strip()
+                if part:
+                    phrases.append(part)
+        else:
+            phrases.append(sentence)
+
+    if not phrases:
         return ""
 
-    # Рассчитываем время для каждого предложения
-    time_per_sentence = duration / len(sentences)
+    # Рассчитываем время для каждой фразы
+    time_per_phrase = duration / len(phrases)
 
     srt_content = ""
-    for i, sentence in enumerate(sentences):
-        start_time = i * time_per_sentence
-        end_time = (i + 1) * time_per_sentence
+    for i, phrase in enumerate(phrases):
+        start_time = i * time_per_phrase
+        end_time = (i + 1) * time_per_phrase
 
         # Форматируем время в формат SRT: HH:MM:SS,mmm
         start_str = format_srt_time(start_time)
@@ -147,7 +162,7 @@ def generate_subtitles(text: str, duration: float) -> str:
 
         srt_content += f"{i + 1}\n"
         srt_content += f"{start_str} --> {end_str}\n"
-        srt_content += f"{sentence}\n\n"
+        srt_content += f"{phrase}\n\n"
 
     return srt_content
 

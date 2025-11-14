@@ -145,26 +145,36 @@
         </div>
 
         <button
-          v-if="!videoUrl && status !== 'processing'"
+          v-if="!videoUrl && status !== 'processing' && status !== 'done'"
           class="btn btn-primary btn-lg"
           @click="startRender"
           :disabled="!hasGeneratedImages"
         >
           🎬 Собрать видео
         </button>
-        
-        <AppLoader 
+
+        <AppLoader
           v-else-if="status === 'processing'"
           title="Собираем ваше видео..."
           subtitle="Это может занять до 2 минут"
         />
-        
-        <VideoPlayer 
-          v-else-if="videoUrl"
+
+        <!-- Показываем видео если есть URL -->
+        <VideoPlayer
+          v-else-if="videoUrl && videoUrl !== ''"
           :video-url="videoUrl"
           title="Готовое видео готово!"
         />
-        
+
+        <!-- Если статус done, но URL нет - показываем debug info -->
+        <div v-else-if="status === 'done' && !videoUrl" class="alert alert-warning mt-4">
+          <div>
+            <h3 class="font-bold">⚠️ Видео сгенерировано, но URL не получен</h3>
+            <p class="text-sm mt-2">Проверьте консоль браузера для деталей</p>
+            <button class="btn btn-sm mt-2" @click="location.reload()">Обновить страницу</button>
+          </div>
+        </div>
+
         <div v-if="error" class="alert alert-error mt-4">
           <span>❌ {{ error }}</span>
         </div>
@@ -414,13 +424,26 @@ const pollStatus = async (projectId) => {
         console.log('[pollStatus] Is undefined?:', result.final_video_url === undefined)
         console.log('[pollStatus] Is empty string?:', result.final_video_url === '')
 
+        // Устанавливаем URL и статус
         videoUrl.value = result.final_video_url
-        console.log('[pollStatus] videoUrl.value set to:', videoUrl.value)
-
         status.value = 'done'
+
+        console.log('[pollStatus] AFTER SETTING:')
+        console.log('[pollStatus] videoUrl.value:', videoUrl.value)
+        console.log('[pollStatus] status.value:', status.value)
+        console.log('[pollStatus] videoUrl is truthy?:', !!videoUrl.value)
+
         updateCache()
         console.log('[pollStatus] Cache updated')
         console.log('[pollStatus] ==========================')
+
+        // Дополнительная проверка через 100ms
+        setTimeout(() => {
+          console.log('[pollStatus] VERIFICATION after 100ms:')
+          console.log('[pollStatus] videoUrl.value:', videoUrl.value)
+          console.log('[pollStatus] status.value:', status.value)
+        }, 100)
+
         stop()
       } else if (renderStatus === 'error') {
         progress.value = 0

@@ -360,8 +360,20 @@ def build_video_with_ffmpeg(
         # Строим filter_complex для наложения изображений
         filter_parts = []
 
-        # Базовый фон - зацикливаем и обрезаем до нужной длительности
-        filter_parts.append(f"[0:v]loop=loop=-1:size=1:start=0,trim=duration={total_duration},setpts=PTS-STARTPTS,scale={video_width}:{video_height}:force_original_aspect_ratio=decrease,pad={video_width}:{video_height}:(ow-iw)/2:(oh-ih)/2[bg]")
+        # Базовый фон - обрезаем до нужной длительности и масштабируем
+        # stream_loop уже зациклил видео на входе, здесь просто обрезаем и масштабируем
+        filter_parts.append(f"[0:v]trim=duration={total_duration},setpts=PTS-STARTPTS,scale={video_width}:{video_height}:force_original_aspect_ratio=decrease,pad={video_width}:{video_height}:(ow-iw)/2:(oh-ih)/2[bg_raw]")
+
+        # Добавляем субтитры НА ФОН (если есть), ДО наложения слайд-шоу
+        if subtitle_path:
+            # Экранируем путь для ffmpeg
+            escaped_subtitle_path = subtitle_path.replace('\\', '/').replace(':', '\\\\:')
+            # Субтитры внизу экрана на фоне - с позицией снизу (MarginV=30)
+            subtitle_on_bg = f"[bg_raw]subtitles='{escaped_subtitle_path}':force_style='FontName=Arial,FontSize=20,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,BackColour=&H80000000&,Bold=1,Outline=2,Shadow=1,Alignment=2,MarginV=30'[bg]"
+            filter_parts.append(subtitle_on_bg)
+        else:
+            # Если нет субтитров - просто переименовываем label
+            filter_parts.append(f"[bg_raw]null[bg]")
 
         # Добавляем каждое изображение с zoom эффектом
         current_base = "bg"
@@ -398,25 +410,10 @@ def build_video_with_ffmpeg(
                 )
                 current_base = output_label
             else:
-                # Последний overlay
-                if subtitle_path:
-                    # Если есть субтитры - создаем промежуточный label
-                    filter_parts.append(
-                        f"[{current_base}][img{i}]overlay={x_pos}:{y_pos}:enable='between(t,{start_time},{end_time})'[video_nosubs]"
-                    )
-                else:
-                    # Если нет субтитров - это конечный label
-                    filter_parts.append(
-                        f"[{current_base}][img{i}]overlay={x_pos}:{y_pos}:enable='between(t,{start_time},{end_time})'[outv]"
-                    )
-
-        # Добавляем субтитры если есть
-        if subtitle_path:
-            # Экранируем путь для ffmpeg (заменяем \ на / и экранируем :)
-            escaped_subtitle_path = subtitle_path.replace('\\', '/').replace(':', '\\\\:')
-            # Добавляем subtitles фильтр с настройками
-            subtitle_filter = f"[video_nosubs]subtitles='{escaped_subtitle_path}':force_style='FontSize=18,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,BackColour=&H80000000&,Bold=1,Outline=2,Shadow=1,MarginV=50'[outv]"
-            filter_parts.append(subtitle_filter)
+                # Последний overlay - всегда выходной label
+                filter_parts.append(
+                    f"[{current_base}][img{i}]overlay={x_pos}:{y_pos}:enable='between(t,{start_time},{end_time})'[outv]"
+                )
 
         filter_complex = ";".join(filter_parts)
         print(f"[FFMPEG] Filter complex length: {len(filter_complex)} chars")
@@ -426,7 +423,8 @@ def build_video_with_ffmpeg(
         cmd = ["ffmpeg", "-y"]  # -y для перезаписи
 
         # Входы: фон + все изображения + аудио (ВСЕ ВХОДЫ ДОЛЖНЫ БЫТЬ ДО ФИЛЬТРОВ!)
-        cmd.extend(["-i", background_path])
+        # ВАЖНО: stream_loop -1 для бесконечного зацикливания фонового видео
+        cmd.extend(["-stream_loop", "-1", "-i", background_path])
         for img_info in images:
             cmd.extend(["-i", img_info["path"]])
 
