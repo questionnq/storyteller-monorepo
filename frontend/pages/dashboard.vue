@@ -4,40 +4,39 @@
     @mousemove="handleMouseMove"
     @mouseleave="handleMouseLeave"
   >
-    <!-- Основа фона -->
-    <div class="absolute inset-0 bg-[#0b0e1a]"></div>
+    <!-- Van Gogh-атмосфера ПОВЕРХ глобального градиента -->
 
     <!-- Текстура мазков -->
     <div 
-      class="absolute inset-0 opacity-8"
-      style="background-image: url('image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Cpath d=%22M20,60 Q40,40 60,60 T100,60 Q120,40 140,60%22 stroke=%22rgba(253,224,71,0.07)%22 stroke-width=%221%22 fill=%22none%22/%3E%3Cpath d=%22M10,100 Q30,80 50,100 T90,100 Q110,80 130,100%22 stroke=%22rgba(139,92,246,0.05)%22 stroke-width=%220.8%22 fill=%22none%22/%3E%3Cpath d=%22M30,140 Q50,120 70,140 T110,140%22 stroke=%22rgba(56,189,248,0.04)%22 stroke-width=%220.6%22 fill=%22none%22/%3E%3C/svg%3E'); background-size: 400px 400px;"
+      class="absolute inset-0 opacity-7 z-0"
+      style="background-image: url('image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Cpath d=%22M20,60 Q40,40 60,60 T100,60 Q120,40 140,60%22 stroke=%22rgba(253,224,71,0.1)%22 stroke-width=%221%22 fill=%22none%22/%3E%3Cpath d=%22M10,100 Q30,80 50,100 T90,100 Q110,80 130,100%22 stroke=%22rgba(139,92,246,0.07)%22 stroke-width=%220.8%22 fill=%22none%22/%3E%3Cpath d=%22M30,140 Q50,120 70,140 T110,140%22 stroke=%22rgba(56,189,248,0.06)%22 stroke-width=%220.6%22 fill=%22none%22/%3E%3C/svg%3E'); background-size: 400px 400px;"
     ></div>
 
-    <!-- Параллакс-облака -->
+    <!-- Параллакс-облака (очень прозрачные) -->
     <div 
-      class="absolute w-80 h-40 rounded-full opacity-20"
+      class="absolute w-96 h-44 rounded-full opacity-8 z-0"
       :style="{
-        background: 'radial-gradient(circle, rgba(253, 224, 71, 0.15) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(253, 224, 71, 0.1) 0%, transparent 70%)',
         top: `${cloud1.y}px`,
         left: `${cloud1.x}px`,
-        transform: `scale(${1 + mouseIntensity * 0.2})`
+        transform: `scale(${1 + mouseIntensity * 0.15})`
       }"
     ></div>
     <div 
-      class="absolute w-72 h-36 rounded-full opacity-15"
+      class="absolute w-80 h-40 rounded-full opacity-7 z-0"
       :style="{
-        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.09) 0%, transparent 70%)',
         top: `${cloud2.y}px`,
         left: `${cloud2.x}px`,
-        transform: `scale(${1 + mouseIntensity * 0.15})`
+        transform: `scale(${1 + mouseIntensity * 0.1})`
       }"
     ></div>
 
     <!-- Свечение под курсором -->
     <div 
-      class="absolute inset-0 opacity-15"
+      class="absolute inset-0 z-0 opacity-25"
       :style="{
-        background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(253, 224, 71, 0.08) 0%, transparent 60%)`
+        background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(253, 224, 71, 0.12) 0%, transparent 60%)`
       }"
     ></div>
 
@@ -63,7 +62,6 @@
         {{ error }}
       </div>
 
-      <!-- Список проектов с анимацией -->
       <div v-if="!loading && projects.length > 0" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         <ProjectCard 
           v-for="(project, index) in projects"
@@ -76,9 +74,8 @@
         />
       </div>
 
-      <!-- Пустое состояние -->
       <div v-else-if="!loading && projects.length === 0" class="fade-in-up">
-        <div class="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-12 text-center max-w-2xl mx-auto">
+        <div class="bg-slate-800/30 backdrop-blur-sm border border-slate-700/40 rounded-2xl p-12 text-center max-w-2xl mx-auto">
           <div class="inline-block mb-6">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="text-yellow-400/60">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -97,7 +94,6 @@
         </div>
       </div>
 
-      <!-- Лоадер -->
       <div v-else class="flex justify-center items-center h-64 fade-in">
         <span class="loading loading-spinner loading-lg text-yellow-400"></span>
       </div>
@@ -122,10 +118,10 @@ const cloud1 = reactive({ x: 0, y: 0 })
 const cloud2 = reactive({ x: 0, y: 0 })
 
 const initClouds = () => {
-  cloud1.x = window.innerWidth / 2 - 160
+  cloud1.x = window.innerWidth / 2 - 192
   cloud1.y = window.innerHeight / 3
-  cloud2.x = window.innerWidth / 1.5 - 144
-  cloud2.y = window.innerHeight / 1.4
+  cloud2.x = window.innerWidth / 1.6 - 160
+  cloud2.y = window.innerHeight / 1.5
 }
 
 onMounted(async () => {
@@ -146,12 +142,13 @@ const handleMouseMove = (e) => {
     Math.pow(e.clientY - window.innerHeight / 2, 2)
   ) / Math.max(window.innerWidth, window.innerHeight) * 2)
 
-  const speed1 = 0.02
-  const speed2 = 0.015
-  cloud1.x = window.innerWidth / 2 - 160 + (window.innerWidth / 2 - e.clientX) * speed1
+  // Параллакс: облака движутся В ОБРАТНУЮ сторону от курсора
+  const speed1 = 0.03
+  const speed2 = 0.02
+  cloud1.x = window.innerWidth / 2 - 192 + (window.innerWidth / 2 - e.clientX) * speed1
   cloud1.y = window.innerHeight / 3 + (window.innerHeight / 2 - e.clientY) * speed1
-  cloud2.x = window.innerWidth / 1.5 - 144 + (window.innerWidth / 2 - e.clientX) * speed2
-  cloud2.y = window.innerHeight / 1.4 + (window.innerHeight / 2 - e.clientY) * speed2
+  cloud2.x = window.innerWidth / 1.6 - 160 + (window.innerWidth / 2 - e.clientX) * speed2
+  cloud2.y = window.innerHeight / 1.5 + (window.innerHeight / 2 - e.clientY) * speed2
 }
 
 const handleMouseLeave = () => {
@@ -192,7 +189,6 @@ const deleteProject = async (id) => {
 </script>
 
 <style scoped>
-/* Анимации появления */
 .fade-in {
   animation: fade-in 0.5s ease-out forwards;
   opacity: 0;
