@@ -12,6 +12,9 @@ import uuid
 # Hugging Face API endpoint для генерации изображений
 HF_API_URL = "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell"
 
+# Глобальный флаг для отслеживания rate limit HF (сбрасывается при перезапуске сервера)
+_HF_RATE_LIMITED = False
+
 # Список API для генерации изображений (в порядке приоритета)
 IMAGE_APIS = [
     {
@@ -43,6 +46,13 @@ async def generate_with_huggingface(prompt: str, timeout: int = 30):
     Генерирует изображение через Hugging Face Inference API
     Загружает результат в Supabase Storage и возвращает публичный URL
     """
+    global _HF_RATE_LIMITED
+
+    # Если уже получили rate limit - сразу пропускаем
+    if _HF_RATE_LIMITED:
+        print(f"[HF] Skipping due to previous rate limit")
+        return "SKIP"
+
     try:
         print(f"[HF] Sending request to Hugging Face...")
 
@@ -92,9 +102,10 @@ async def generate_with_huggingface(prompt: str, timeout: int = 30):
             print(f"[HF] Model is loading, estimated time: 20s")
             await asyncio.sleep(20)
             return None  # Вернет None для retry
-        elif response.status_code == 429:
+        elif response.status_code == 402:
             # Rate limit / токены закончились
-            print(f"[HF] Rate limit exceeded (токены закончились), пропускаем HF API")
+            _HF_RATE_LIMITED = True  # Устанавливаем флаг
+            print(f"[HF] Rate limit exceeded (токены закончились), пропускаем HF API для всех последующих запросов")
             return "SKIP"  # Специальный код для пропуска этого API
         else:
             print(f"[HF] Error {response.status_code}: {response.text[:200]}")
