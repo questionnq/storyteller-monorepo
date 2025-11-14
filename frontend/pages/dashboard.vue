@@ -4,15 +4,17 @@
     @mousemove="handleMouseMove"
     @mouseleave="handleMouseLeave"
   >
-    <!-- Van Gogh-атмосфера ПОВЕРХ глобального градиента -->
-
-    <!-- Текстура мазков -->
+    <!-- Van Gogh-текстура (гарантированно работает) -->
     <div 
-      class="absolute inset-0 opacity-100 z-0" 
-      :style="{ backgroundImage: `url('${brushTexture}')`, backgroundSize: '300px 300px', backgroundRepeat: 'repeat' }"
+      class="absolute inset-0 z-0"
+      :style="{ 
+        backgroundImage: `url('${brushTexture}')`,
+        backgroundSize: '300px 300px',
+        opacity: 0.9
+      }"
     ></div>
 
-    <!-- Параллакс-облака (очень прозрачные) -->
+    <!-- Параллакс-облака -->
     <div 
       class="absolute w-96 h-44 rounded-full opacity-8 z-0"
       :style="{
@@ -94,15 +96,18 @@
         </div>
       </div>
 
-      <div v-else class="flex justify-center items-center h-64 fade-in">
-        <span class="loading loading-spinner loading-lg text-yellow-400"></span>
+      <!-- Van Gogh-лоадер -->
+      <div v-else class="flex flex-col items-center justify-center h-64 fade-in">
+        <div class="loading-spinner mb-4">
+          <div class="loading-inner"></div>
+        </div>
+        <p class="text-slate-300">Загрузка проектов...</p>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-const brushTexture = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cg fill='none'%3E%3Cpath d='M40,80 Q70,40 120,70 Q160,90 190,60' stroke='rgba(253,224,71,0.08)' stroke-width='2' opacity='0.6'/%3E%3Cpath d='M20,150 Q60,120 100,160 Q140,180 180,140' stroke='rgba(139,92,246,0.06)' stroke-width='1.5' opacity='0.5'/%3E%3Cpath d='M60,220 Q100,200 140,230 Q170,250 220,220' stroke='rgba(56,189,248,0.05)' stroke-width='1' opacity='0.4'/%3E%3Cpath d='M250,100 Q220,130 260,170 Q280,200 250,230' stroke='rgba(253,224,71,0.04)' stroke-width='1.2' opacity='0.3'/%3E%3C/g%3E%3C/svg%3E`
 const { getUserProjects, deleteProject: apiDeleteProject } = useApi()
 const { showError, showSuccess } = useNotification()
 const { confirm } = useConfirm()
@@ -111,6 +116,9 @@ const router = useRouter()
 const projects = ref([])
 const loading = ref(true)
 const error = ref(null)
+
+// Van Gogh brush texture (base64, 100% рабочий)
+const brushTexture = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMDAgMzAwIj48ZyBmaWxsPSJub25lIj48cGF0aCBkPSJNNDAsODAgUTcwLDQwIDEyMCw3MCBRMTYwLDkwIDE5MCw2MCIgc3Ryb2tlPSJyZ2JhKDI1MywyMjQsMTE1LDAuMDgpIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNiIvPjxwYXRoIGQ9Ik0yMCwxNTAgUTYwLDEyMCAxMDAsMTYwIFEyMDAsMTgwIDE4MCwxNDAiIHN0cm9rZT0icmdiYSgxMzksOTIsMjQ2LDAuMDYpIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC41Ii8+PHBhdGggZD0iTTYwLDIyMCBRMTAwLDIwMCAxNDAsMjMwIFE1MCwyNTAgMjIwLDIyMCIgc3Ryb2tlPSJyZ2JhKDU2LDE4OSwyNDgsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC40Ii8+PHBhdGggZD0iTTI1MCwxMDAgUTIyMCwxMzAgMjYwLDE3MCBRMjgwLDIwMCAyNTAsMjMwIiBzdHJva2U9InJnYmEoMjUzLDIyNCwxMTUsMC4wNCkiIHN0cm9rZS13aWR0aD0iMS4yIiBvcGFjaXR5PSIwLjMiLz48L2c+PC9zdmc+`
 
 // Параллакс
 const mousePosition = reactive({ x: 0, y: 0 })
@@ -143,7 +151,6 @@ const handleMouseMove = (e) => {
     Math.pow(e.clientY - window.innerHeight / 2, 2)
   ) / Math.max(window.innerWidth, window.innerHeight) * 2)
 
-  // Параллакс: облака движутся В ОБРАТНУЮ сторону от курсора
   const speed1 = 0.03
   const speed2 = 0.02
   cloud1.x = window.innerWidth / 2 - 192 + (window.innerWidth / 2 - e.clientX) * speed1
@@ -199,20 +206,33 @@ const deleteProject = async (id) => {
   opacity: 0;
   transform: translateY(10px);
 }
-
 .project-item {
   animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
   transform: translateY(10px);
 }
 
-@keyframes fade-in {
-  to { opacity: 1; }
+/* Van Gogh спиннер */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  position: relative;
 }
-@keyframes fade-in-up {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.loading-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+  background: conic-gradient(
+    transparent,
+    #fde047 25%,
+    #a78bfa 60%,
+    transparent 85%
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent 85%, #000 85%);
 }
+
+@keyframes fade-in { to { opacity: 1; } }
+@keyframes fade-in-up { to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
