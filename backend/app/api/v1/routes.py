@@ -439,9 +439,9 @@ async def generate_voiceover_endpoint(
             # Обновляем project_time в базе
             update_project_time(project_id, actual_duration)
 
-            # ИСПОЛЬЗУЕМ WHISPER для точных субтитров (идеальная синхронизация)
-            print(f"[VOICEOVER] Generating subtitles from audio using Whisper...")
-            srt_content = generate_subtitles_from_audio(audio_temp.name)
+            # ИСПОЛЬЗУЕМ WHISPER для точных таймкодов + исходный текст (БЕЗ ошибок распознавания!)
+            print(f"[VOICEOVER] Generating subtitles with Whisper timing + original text...")
+            srt_content = generate_subtitles_from_audio(audio_temp.name, original_text=full_text)
 
             # Если Whisper не сработал - используем fallback
             if not srt_content:

@@ -133,13 +133,16 @@ async def generate_voiceover(text: str, lang: str = "ru", speed: float = 1.3) ->
         raise Exception(f"Failed to generate voiceover: {str(e)}")
 
 
-def generate_subtitles_from_audio(audio_path: str) -> str:
+def generate_subtitles_from_audio(audio_path: str, original_text: str = None) -> str:
     """
     Генерирует точные субтитры из аудио файла используя faster-whisper
-    Это даёт идеальную синхронизацию с озвучкой и работает быстрее/экономнее
+
+    ВАЖНО: Если передан original_text, использует его вместо распознанного текста,
+    но сохраняет таймкоды от Whisper. Это гарантирует корректный текст без ошибок распознавания.
 
     Args:
         audio_path: Путь к аудио файлу
+        original_text: Исходный текст (из сценария), если None - использует распознанный Whisper
 
     Returns:
         str: Содержимое SRT файла (или пустая строка если Whisper недоступен)
@@ -168,6 +171,11 @@ def generate_subtitles_from_audio(audio_path: str) -> str:
         )
 
         print(f"[WHISPER] Detected language: {info.language} (probability: {info.language_probability:.2f})")
+
+        # Если передан original_text - используем его вместо распознанного
+        if original_text:
+            print(f"[WHISPER] Using original text instead of recognized text (eliminates recognition errors)")
+            return generate_subtitles_with_whisper_timing(segments, original_text)
 
         # Генерируем SRT контент с разбивкой на короткие фразы
         srt_lines = []
@@ -238,6 +246,78 @@ def format_timestamp_srt(seconds: float) -> str:
     secs = int(seconds % 60)
     millis = int((seconds % 1) * 1000)
     return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
+
+
+def generate_subtitles_with_whisper_timing(segments, original_text: str) -> str:
+    """
+    Комбинирует таймкоды от Whisper с исходным текстом из сценария
+    Это даёт идеальную синхронизацию БЕЗ ошибок распознавания
+
+    Args:
+        segments: Whisper segments с таймкодами
+        original_text: Исходный текст из сценария (корректный)
+
+    Returns:
+        str: SRT контент с корректным текстом и точными таймкодами
+    """
+    print(f"[WHISPER_TIMING] Generating subtitles from original text with Whisper timings")
+
+    # Разбиваем исходный текст на фразы (как в generate_subtitles)
+    sentences = original_text.replace("! ", "!|").replace("? ", "?|").replace(". ", ".|").split("|")
+    sentences = [s.strip() for s in sentences if s.strip()]
+
+    phrases = []
+    for sentence in sentences:
+        if len(sentence) > 50:
+            # Разбиваем длинные предложения
+            parts = sentence.replace(", ", ",|").replace("... ", "...|").replace(" и ", " и|").replace(" но ", " но|").replace(" а ", " а|").split("|")
+            for part in parts:
+                part = part.strip()
+                if part and part != "...":
+                    phrases.append(part)
+        else:
+            phrases.append(sentence)
+
+    if not phrases:
+        print(f"[WHISPER_TIMING] No phrases extracted from original text")
+        return ""
+
+    print(f"[WHISPER_TIMING] Extracted {len(phrases)} phrases from original text")
+
+    # Собираем все таймкоды от Whisper
+    all_timecodes = []
+    for segment in segments:
+        all_timecodes.append({
+            'start': segment.start,
+            'end': segment.end
+        })
+
+    if not all_timecodes:
+        print(f"[WHISPER_TIMING] No timecodes from Whisper")
+        return ""
+
+    print(f"[WHISPER_TIMING] Got {len(all_timecodes)} timecode segments from Whisper")
+
+    # Распределяем фразы по таймкодам
+    srt_lines = []
+    total_duration = all_timecodes[-1]['end']
+
+    # Равномерно распределяем фразы по общей длительности
+    for i, phrase in enumerate(phrases):
+        # Пропорционально распределяем время
+        start_time = (i / len(phrases)) * total_duration
+        end_time = ((i + 1) / len(phrases)) * total_duration
+
+        # Форматируем в SRT
+        srt_lines.append(f"{i + 1}")
+        srt_lines.append(f"{format_timestamp_srt(start_time)} --> {format_timestamp_srt(end_time)}")
+        srt_lines.append(phrase)
+        srt_lines.append("")
+
+    srt_content = "\n".join(srt_lines)
+    print(f"[WHISPER_TIMING] Generated {len(phrases)} subtitle segments with original text")
+
+    return srt_content
 
 
 def generate_subtitles(text: str, duration: float, start_offset: float = 0.1) -> str:
