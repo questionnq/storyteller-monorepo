@@ -381,8 +381,8 @@ Pull requests приветствуются! Для серьезных измен
 
 ## 📧 Контакты
 
-- GitHub: [@your-username](https://github.com/your-username)
-- Email: your.email@example.com
+- GitHub: (https://github.com/questionnq/storyteller-monorepo/)
+- Email for support: anekludov713@gmail.com
 
 ---
 
@@ -391,7 +391,6 @@ Pull requests приветствуются! Для серьезных измен
 - [FastAPI](https://fastapi.tiangolo.com/) за отличный фреймворк
 - [Nuxt](https://nuxt.com/) за мощный Vue фреймворк
 - [Supabase](https://supabase.com/) за BaaS платформу
-- [Hugging Face](https://huggingface.co/) за доступ к AI моделям
 - [Google](https://ai.google.dev/) за Gemini API
 
 ---
