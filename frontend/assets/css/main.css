@@ -1,0 +1,144 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.van-gogh-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M40,60 Q60,40 80,60 T120,60 Q140,40 160,60' stroke='%23fde047' stroke-width='2' fill='none' opacity='0.6'/%3E%3Cpath d='M30,100 Q50,80 70,100 T110,100 Q130,80 150,100' stroke='%2360a5fa' stroke-width='1.5' fill='none' opacity='0.5'/%3E%3Cpath d='M50,140 Q70,120 90,140 T130,140' stroke='%23a78bfa' stroke-width='1' fill='none' opacity='0.4'/%3E%3C/svg%3E");
+  background-size: 300px 300px;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: overlay;
+}
+
+@layer base {
+  body {
+    @apply text-slate-100;
+    background: linear-gradient(135deg, #1e1b4b 0%, #3b0a6b 30%, #0c4a6e 100%);
+    background-attachment: fixed;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='none' stroke='%23fde047' stroke-width='2'/%3E%3C/svg%3E"), auto;
+  }
+}
+
+@layer components {
+  .btn-van-gogh-primary {
+    @apply bg-gradient-to-r from-yellow-300 via-amber-400 to-blue-500 text-white rounded-full relative overflow-hidden border-0;
+    background-size: 200% 200%;
+    animation: gradientShift 4s ease-in-out infinite;
+    box-shadow: 0 8px 25px -8px rgba(253, 224, 71, 0.6);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .btn-van-gogh-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -6px rgba(253, 224, 71, 0.8);
+  }
+
+  .btn-van-gogh-outline {
+    @apply border-2 border-yellow-300 text-yellow-300 bg-transparent rounded-full relative overflow-hidden;
+    box-shadow: 0 4px 12px -4px rgba(253, 224, 71, 0.3);
+    transition: transform 0.3s;
+  }
+
+  .btn-van-gogh-outline:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px -3px rgba(253, 224, 71, 0.5);
+  }
+
+  .btn-van-gogh-primary::before,
+  .btn-van-gogh-outline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 150%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transform: skewX(-25deg);
+    transition: left 0.5s;
+  }
+
+  .btn-van-gogh-primary:hover::before,
+  .btn-van-gogh-outline:hover::before {
+    left: 100%;
+  }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.star {
+  position: absolute;
+  background: #fde047;
+  border-radius: 50%;
+  animation: twinkle 3s infinite ease-in-out;
+  box-shadow: 0 0 12px #fde047, 0 0 20px rgba(253, 224, 71, 0.6);
+  z-index: 2;
+}
+
+.swirl-cloud {
+  position: absolute;
+  width: 220px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 50%, rgba(253, 224, 71, 0.08) 0%, transparent 80%);
+  opacity: 0.9;
+  z-index: 1;
+  animation: swirl 25s linear infinite;
+  filter: blur(1px);
+}
+
+.card-glow {
+  box-shadow:
+    0 0 30px rgba(253, 224, 71, 0.2),
+    inset 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.auth-card {
+  animation: cardAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.auth-star {
+  position: absolute;
+  background: #fde047;
+  border-radius: 50%;
+  animation: twinkle 4s infinite ease-in-out;
+  box-shadow: 0 0 10px #fde047, 0 0 20px rgba(253, 224, 71, 0.5);
+}
+
+.auth-swirl {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 50%, rgba(253, 224, 71, 0.06) 0%, transparent 70%);
+  opacity: 0.85;
+  filter: blur(1px);
+  z-index: 0;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes swirl {
+  0% { transform: rotate(0deg) scale(1); }
+  100% { transform: rotate(360deg) scale(1.05); }
+}

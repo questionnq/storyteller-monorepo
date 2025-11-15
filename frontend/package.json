@@ -1,14 +1,26 @@
+
+
 {
-    "name": "frontend-madrigal",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-      "build": "nuxt build",
-      "dev": "nuxt dev",
-      "generate": "nuxt generate",
-      "preview": "nuxt preview"
-    },
-    "devDependencies": {
-      "nuxt": "^3.0.0" 
-    }
+  "name": "frontend_storyteller",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev --port 3000",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxtjs/supabase": "^2.0.1",
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "daisyui": "^5.4.7",
+    "nuxt": "^4.2.1",
+    "vue": "^3.5.22",
+    "vue-router": "^4.6.3",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "^3.1.0"
   }
+}
