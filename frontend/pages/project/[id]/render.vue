@@ -279,10 +279,10 @@ import { usePolling } from '~/composables/usePolling'
 import { useRoute } from 'vue-router'
 import { useApi } from '~/composables/useApi'
 import { useSupabaseAuth } from '~/composables/useSupabaseAuth'
-import RenderSteps from '~/components/RenderSteps.vue'
-import RenderProgress from '~/components/RenderProgress.vue'
-import AudioPlayer from '~/components/AudioPlayer.vue'
-import VideoPlayer from '~/components/VideoPlayer.vue'
+import RenderSteps from '~/components/render/RenderSteps.vue'
+import RenderProgress from '~/components/common/RenderProgress.vue'
+import AudioPlayer from '~/components/common/AudioPlayer.vue'
+import VideoPlayer from '~/components/common/VideoPlayer.vue'
 
 const route = useRoute()
 const api = useApi()
