@@ -1,4 +1,3 @@
-// composables/useConfirm.js
 let resolveCallback = null
 
 export const useConfirm = () => {

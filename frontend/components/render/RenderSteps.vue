@@ -20,7 +20,7 @@
         class="relative pl-8 py-2"
         :class="stepClass(step)"
       >
-        <!-- SVG-иконка шага -->
+      
         <div class="absolute left-0 top-3 w-5 h-5 rounded-full flex items-center justify-center">
           <svg v-if="step.status === 'completed' && currentStatus === 'completed'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-400">
             <path d="M9 12l2 2 4-4" />

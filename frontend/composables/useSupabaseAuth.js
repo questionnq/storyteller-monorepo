@@ -1,4 +1,3 @@
-// composables/useSupabaseAuth.js
 export const useSupabaseAuth = () => {
   const user = useSupabaseUser()
   const client = useSupabaseClient()

@@ -1,4 +1,3 @@
-<!-- pages/register.vue -->
 <template>
   <NuxtLayout name="auth">
     <div 
@@ -6,19 +5,16 @@
       @mousemove="handleMouseMove"
       @mouseleave="handleMouseLeave"
     >
-      <!-- Движущиеся звёзды -->
       <div class="absolute inset-0 overflow-hidden">
         <div v-for="i in 60" :key="i" class="auth-star" :style="getStarStyle(i)"></div>
       </div>
 
-      <!-- Завихрения -->
       <div class="absolute inset-0 overflow-hidden">
         <div class="auth-swirl" style="top: 10%; left: 5%; width: 250px; height: 120px; animation: swirl 30s linear infinite;"></div>
         <div class="auth-swirl" style="bottom: 15%; right: 10%; width: 280px; height: 140px; animation: swirl 35s reverse linear infinite;"></div>
         <div class="auth-swirl" style="top: 50%; right: 20%; width: 220px; height: 110px; animation: swirl 40s linear infinite;"></div>
       </div>
 
-      <!-- Свечение под курсором -->
       <div 
         class="absolute inset-0 opacity-20 pointer-events-none"
         :style="{
@@ -26,17 +22,13 @@
         }"
       ></div>
 
-      <!-- Текстура мазков -->
       <div class="van-gogh-texture opacity-8"></div>
 
       <div class="hero-content flex-col lg:flex-row-reverse relative z-10 px-4">
-        <!-- Левая часть -->
         <div class="text-center lg:text-left max-w-lg fade-in-left">
           <h1 class="text-5xl font-bold mb-2 text-slate-100">Регистрация</h1>
           <p class="py-6 text-slate-200">Создайте аккаунт, чтобы начать создавать истории</p>
         </div>
-        
-        <!-- Форма -->
         <div class="auth-card w-full max-w-sm">
           <div 
             class="card rounded-3xl p-8 border border-yellow-400/30 bg-gradient-to-br from-amber-400/10 to-blue-500/15 backdrop-blur-xl shadow-2xl card-glow"
@@ -127,7 +119,6 @@ function handleMouseMove(e) {
 }
 
 function handleMouseLeave() {
-  // glow fades out automatically
 }
 
 function getStarStyle(index) {

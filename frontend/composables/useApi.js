@@ -1,4 +1,3 @@
-// composables/useApi.js
 export const useApi = () => {
   const config = useRuntimeConfig()
   const supabase = useSupabaseClient() 
@@ -39,7 +38,7 @@ export const useApi = () => {
     return response
   }
 
-  // ========== ГЕНЕРАЦИЯ СЦЕНАРИЯ ==========
+  //ГЕНЕРАЦИЯ СЦЕНАРИЯ
   const generateScript = async (request) => {
     const payload = {
       prompt: request.prompt,
@@ -59,7 +58,7 @@ export const useApi = () => {
     }
   }
 
-  // ========== ПОЛУЧЕНИЕ ПРОЕКТОВ ==========
+  //ПОЛУЧЕНИЕ ПРОЕКТОВ
   const getUserProjects = async () => {
     try {
       console.log('[useApi] Calling getUserProjects')
@@ -72,12 +71,12 @@ export const useApi = () => {
     }
   }
 
-  // ========== ПОЛУЧЕНИЕ ПРОЕКТА ==========
+  //ПОЛУЧЕНИЕ ПРОЕКТА
   const getProject = async (id) => {
     return await apiFetch(`/projects/${id}`)
   }
 
-  // ========== ГЕНЕРАЦИЯ ВСЕХ ИЗОБРАЖЕНИЙ (НОВОЕ!) ==========
+  //ГЕНЕРАЦИЯ ВСЕХ ИЗОБРАЖЕНИЙ
   const generateImages = async (projectId) => {
     try {
       return await apiFetch(`/generate-image/${projectId}`, {
@@ -89,7 +88,7 @@ export const useApi = () => {
     }
   }
 
-  // ========== ОБНОВЛЕНИЕ СЦЕНЫ (НОВОЕ!) ==========
+  //ОБНОВЛЕНИЕ СЦЕНЫ
   const updateScene = async (sceneId, updates) => {
     try {
       return await apiFetch(`/scenes/${sceneId}`, {
@@ -102,7 +101,7 @@ export const useApi = () => {
     }
   }
 
-  // ========== ПЕРЕГЕНЕРАЦИЯ СЦЕНЫ (НОВОЕ!) ==========
+  //ПЕРЕГЕНЕРАЦИЯ СЦЕНЫ
   const regenerateScene = async (sceneId, style = null) => {
     try {
       const body = style ? { style } : {}
@@ -116,7 +115,7 @@ export const useApi = () => {
     }
   }
 
-  // ========== ОБНОВЛЕНИЕ МЕТАДАННЫХ ПРОЕКТА (НОВОЕ!) ==========
+  //ОБНОВЛЕНИЕ МЕТАДАННЫХ ПРОЕКТА
   const updateProject = async (projectId, updates) => {
     try {
       return await apiFetch(`/projects/${projectId}`, {
@@ -129,7 +128,7 @@ export const useApi = () => {
     }
   }
 
-  // ========== УДАЛЕНИЕ СЦЕНЫ ==========
+  //УДАЛЕНИЕ СЦЕНЫ
   const deleteScene = async (sceneId) => {
     try {
       return await apiFetch(`/scenes/${sceneId}`, {
@@ -141,7 +140,7 @@ export const useApi = () => {
     }
   }
 
-  // ========== УДАЛЕНИЕ ПРОЕКТА ==========
+  //УДАЛЕНИЕ ПРОЕКТА
   const deleteProject = async (projectId) => {
     try {
       return await apiFetch(`/projects/${projectId}`, {
@@ -153,7 +152,7 @@ export const useApi = () => {
     }
   }
 
-  // ========== РЕНДЕРИНГ (для будущего Модуля 2) ==========
+  //РЕНДЕРИНГ
   const generateVoiceover = async (projectId) => {
     try {
       console.log('[useApi] Calling generateVoiceover for project:', projectId)
@@ -199,7 +198,7 @@ export const useApi = () => {
     updateScene,
     regenerateScene,
     updateProject,
-    deleteScene,          // НОВОЕ
+    deleteScene,
     deleteProject,
     generateVoiceover,
     startRender,

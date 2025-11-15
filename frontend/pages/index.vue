@@ -1,17 +1,13 @@
-<!-- pages/index.vue -->
 <template>
   <div 
     class="hero min-h-screen relative overflow-hidden"
     @mousemove="handleMouseMove"
     @mouseleave="handleMouseLeave"
   >
-    <!-- Глубокий градиентный фон -->
     <div class="absolute inset-0 bg-gradient-to-br from-indigo-950 via-purple-950 to-blue-950"></div>
     
-    <!-- Van Gogh brushstroke texture -->
     <div class="van-gogh-texture"></div>
 
-    <!-- Mouse-following glow -->
     <div 
       class="absolute inset-0 opacity-25 pointer-events-none"
       :style="{
@@ -19,12 +15,10 @@
       }"
     ></div>
 
-    <!-- Animated stars -->
     <div class="absolute inset-0 overflow-hidden">
       <div v-for="i in 80" :key="i" class="star" :style="getStarStyle(i)"></div>
     </div>
 
-    <!-- Enhanced swirling clouds -->
     <div class="absolute inset-0 overflow-hidden">
       <div class="swirl-cloud swirl-1"></div>
       <div class="swirl-cloud swirl-2"></div>
@@ -114,7 +108,6 @@ function getStarStyle(index) {
 </script>
 
 <style scoped>
-/* Остальные анимации остаются, можно оставить как есть */
 @keyframes twinkle {
   0%, 100% { opacity: 0.3; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.3); }

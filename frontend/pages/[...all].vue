@@ -24,7 +24,7 @@
       <div class="swirl-cloud swirl-3"></div>
     </div>
 
-    <!-- Фрагменты сценария (БЕЗОПАСНО!) -->
+    <!-- Фрагменты сценария -->
     <div class="absolute inset-0 overflow-visible pointer-events-none">
       <div 
         v-for="(fragment, i) in scriptFragments" 
@@ -47,7 +47,7 @@
     <!-- Контент -->
     <div class="relative z-10 flex flex-col justify-center min-h-screen px-4">
       <div class="max-w-md mx-auto text-center">
-        <!-- Анимированный 404 (БОЛЬШОЙ!) -->
+        <!-- Анимированный 404 -->
         <div 
           class="relative inline-flex items-center justify-center w-32 h-32 rounded-3xl mb-8 mx-auto cursor-pointer"
           @click="handle404Click"
@@ -108,7 +108,7 @@ const glowIntensity = ref(0.5)
 // Звёзды
 const dynamicStars = ref([])
 
-// Фрагменты сценария (инициализированы сразу!)
+// Фрагменты сценария
 const scriptFragments = ref([
   { text: 'Интересные факты про электроовец', x: 0, y: 0, opacity: 0, speed: 0.01, offsetX: 0, offsetY: 0 },
   { text: 'Этот мужчина...', x: 0, y: 0, opacity: 0, speed: 0.01, offsetX: 0, offsetY: 0 },

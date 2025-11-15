@@ -1,10 +1,8 @@
-/* assets/css/main.css — замени целиком или дополни */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Van Gogh-inspired brushstroke texture (SVG inline) */
 .van-gogh-texture {
   position: absolute;
   inset: 0;
@@ -50,7 +48,6 @@
     box-shadow: 0 6px 16px -3px rgba(253, 224, 71, 0.5);
   }
 
-  /* Shared shine effect */
   .btn-van-gogh-primary::before,
   .btn-van-gogh-outline::before {
     content: '';
@@ -76,7 +73,6 @@
   100% { background-position: 0% 50%; }
 }
 
-/* Усиливаем звёзды и завихрения */
 .star {
   position: absolute;
   background: #fde047;
@@ -98,7 +94,6 @@
   filter: blur(1px);
 }
 
-/* Добавляем 3D-иллюзию карточке */
 .card-glow {
   box-shadow:
     0 0 30px rgba(253, 224, 71, 0.2),
@@ -121,7 +116,6 @@
   opacity: 0;
 }
 
-/* Звёзды на фоне */
 .auth-star {
   position: absolute;
   background: #fde047;
@@ -130,7 +124,6 @@
   box-shadow: 0 0 10px #fde047, 0 0 20px rgba(253, 224, 71, 0.5);
 }
 
-/* Завихрения */
 .auth-swirl {
   position: absolute;
   border-radius: 50%;

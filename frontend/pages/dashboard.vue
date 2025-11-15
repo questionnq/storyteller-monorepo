@@ -4,7 +4,6 @@
     @mousemove="handleMouseMove"
     @mouseleave="handleMouseLeave"
   >
-    <!-- Van Gogh "холст" -->
     <div class="absolute inset-0 z-0 opacity-30">
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%, rgba(253,224,71,0.03), transparent_40%)]"></div>
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%, rgba(139,92,246,0.02), transparent_50%)]"></div>
@@ -12,7 +11,6 @@
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%, rgba(253,224,71,0.015), transparent_55%)]"></div>
     </div>
 
-    <!-- Параллакс-облака -->
     <div 
       class="absolute w-96 h-44 rounded-full opacity-8 z-0"
       :style="{
@@ -32,7 +30,6 @@
       }"
     ></div>
 
-    <!-- Свечение под курсором -->
     <div 
       class="absolute inset-0 z-0 opacity-25"
       :style="{
@@ -40,7 +37,6 @@
       }"
     ></div>
 
-    <!-- Контент -->
     <main class="container mx-auto px-4 py-8 max-w-7xl relative z-10">
       <Notification />
 
@@ -94,7 +90,7 @@
         </div>
       </div>
 
-      <!-- Van Gogh-лоадер -->
+
       <div v-else class="flex flex-col items-center justify-center h-64 fade-in">
         <div class="loading-spinner mb-4">
           <div class="loading-inner"></div>
@@ -115,10 +111,8 @@ const projects = ref([])
 const loading = ref(true)
 const error = ref(null)
 
-// Van Gogh brush texture (base64, 100% рабочий)
 const brushTexture = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMDAgMzAwIj48ZyBmaWxsPSJub25lIj48cGF0aCBkPSJNNDAsODAgUTcwLDQwIDEyMCw3MCBRMTYwLDkwIDE5MCw2MCIgc3Ryb2tlPSJyZ2JhKDI1MywyMjQsMTE1LDAuMDgpIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNiIvPjxwYXRoIGQ9Ik0yMCwxNTAgUTYwLDEyMCAxMDAsMTYwIFEyMDAsMTgwIDE4MCwxNDAiIHN0cm9rZT0icmdiYSgxMzksOTIsMjQ2LDAuMDYpIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC41Ii8+PHBhdGggZD0iTTYwLDIyMCBRMTAwLDIwMCAxNDAsMjMwIFE1MCwyNTAgMjIwLDIyMCIgc3Ryb2tlPSJyZ2JhKDU2LDE4OSwyNDgsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC40Ii8+PHBhdGggZD0iTTI1MCwxMDAgUTIyMCwxMzAgMjYwLDE3MCBRMjgwLDIwMCAyNTAsMjMwIiBzdHJva2U9InJnYmEoMjUzLDIyNCwxMTUsMC4wNCkiIHN0cm9rZS13aWR0aD0iMS4yIiBvcGFjaXR5PSIwLjMiLz48L2c+PC9zdmc+`
 
-// Параллакс
 const mousePosition = reactive({ x: 0, y: 0 })
 const mouseIntensity = ref(0)
 const cloud1 = reactive({ x: 0, y: 0 })
@@ -210,7 +204,6 @@ const deleteProject = async (id) => {
   transform: translateY(10px);
 }
 
-/* Van Gogh спиннер */
 .loading-spinner {
   width: 40px;
   height: 40px;

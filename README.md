@@ -395,7 +395,3 @@ Pull requests приветствуются! Для серьезных измен
 - [Google](https://ai.google.dev/) за Gemini API
 
 ---
-
-<div align="center">
-  Сделано с ❤️ и помощью AI
-</div>

@@ -1,10 +1,9 @@
 <template>
   <div class="bg-slate-800/40 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/50 h-full flex flex-col transition-all duration-300 hover:border-yellow-400/40">
-    <!-- Шапка -->
+
     <div class="flex justify-between items-center mb-4">
       <span class="text-sm font-bold text-slate-200">Сцена {{ scene.scene_number }}</span>
       <div class="flex gap-2">
-        <!-- Кастомный селект -->
         <div class="relative" ref="styleSelect">
           <button 
             @click="toggleStyleMenu"
@@ -16,7 +15,6 @@
             </svg>
           </button>
 
-          <!-- Выпадающее меню -->
           <div 
             v-show="isStyleMenuOpen"
             class="absolute z-10 mt-1 w-full bg-slate-800/90 backdrop-blur-sm rounded-lg border border-slate-700/50 shadow-lg overflow-hidden"
@@ -40,7 +38,6 @@
           :disabled="isGenerating"
           aria-label="Перегенерировать"
         >
-          <!-- Мазок света при наведении -->
           <div class="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
           <svg 
             v-if="!isGenerating" 
@@ -62,26 +59,18 @@
         </button>
       </div>
     </div>
-
-    <!-- Контейнер изображения -->
     <div class="flex-1 flex items-center justify-center bg-slate-900/30 rounded-xl overflow-hidden relative border-2 border-dashed border-slate-700/40">
-      <!-- Загрузка / Генерация -->
       <div v-if="isGenerating || imageLoading" class="text-center p-6 w-full">
-        <!-- Van Gogh-спиннер -->
         <div class="loading-spinner mb-4 mx-auto">
           <div class="loading-inner"></div>
         </div>
         <p class="text-slate-300 text-sm mb-2">{{ imageLoading ? 'Загружаю изображение...' : 'Генерирую изображение...' }}</p>
         <p class="text-xs text-slate-500 mt-1">{{ progressText }}</p>
-        
-        <!-- Анимированные "мазки" -->
         <div class="absolute inset-0 opacity-10 overflow-hidden pointer-events-none">
           <div class="absolute top-1/4 left-1/4 w-32 h-16 bg-yellow-400/30 rounded-full animate-pulse-slow"></div>
           <div class="absolute bottom-1/3 right-1/4 w-28 h-14 bg-blue-500/20 rounded-full animate-pulse-slower"></div>
         </div>
       </div>
-
-      <!-- Ошибка -->
       <div v-else-if="error" class="text-center p-6">
         <div class="inline-block mb-3">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-red-400">
@@ -98,8 +87,6 @@
           Попробовать снова
         </button>
       </div>
-
-      <!-- Нет изображения -->
       <div v-else-if="!scene.generated_image_url" class="text-center p-6">
         <div class="inline-block mb-3">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="text-yellow-400/40">
@@ -112,8 +99,6 @@
         </div>
         <p class="text-slate-500 text-sm">Изображение ещё не сгенерировано</p>
       </div>
-
-      <!-- Изображение (как картина) -->
       <div v-else class="p-2 relative rounded-lg bg-gradient-to-br from-yellow-400/5 to-blue-500/5 border border-yellow-400/20">
         <img
           :src="scene.generated_image_url"
@@ -123,12 +108,9 @@
           @error="handleImageError"
           :style="{ display: imageLoaded ? 'block' : 'none' }"
         />
-        <!-- Тень-рамка -->
         <div class="absolute inset-0 rounded-lg shadow-[0_0_20px_rgba(253,224,71,0.1)] pointer-events-none"></div>
       </div>
     </div>
-
-    <!-- Промпт -->
     <div v-if="scene.visual_prompt" class="mt-3 p-3 bg-slate-800/30 rounded-xl text-xs text-slate-400 max-h-20 overflow-y-auto border border-slate-700/40">
       <span class="text-slate-300 font-medium">Промпт:</span> {{ scene.visual_prompt }}
     </div>
@@ -167,17 +149,14 @@ const error = ref(null)
 const imageLoading = ref(false)
 const imageLoaded = ref(false)
 
-// Отслеживаем изменение URL изображения
 watch(() => props.scene.generated_image_url, (newUrl, oldUrl) => {
   console.log(`[ImageGenerator Scene ${props.scene.scene_number}] URL changed:`, { oldUrl, newUrl })
 
-  // Только если URL изменился (не при первой загрузке страницы)
   if (newUrl && newUrl !== oldUrl) {
     console.log(`[ImageGenerator Scene ${props.scene.scene_number}] Setting imageLoading=true`)
     imageLoading.value = true
     imageLoaded.value = false
   }
-  // Если URL появился и картинка уже загружена ранее - сбрасываем лоадер
   if (newUrl && !newUrl.includes('placehold.co') && !props.isGenerating) {
     console.log(`[ImageGenerator Scene ${props.scene.scene_number}] Image ready, setting imageLoading=false`)
     imageLoading.value = false
@@ -223,7 +202,6 @@ const selectedStyleLabel = computed(() => {
   return styleOptions.find(opt => opt.value === selectedStyle.value)?.label || 'Стандартный'
 })
 
-// Для закрытия по клику вне
 const styleSelect = ref(null)
 
 const handleClickOutside = (event) => {
@@ -250,9 +228,7 @@ const selectStyle = (value) => {
 }
 
 onMounted(() => {
-  // Восстанавливаем значение из пропсов при монтировании
   if (props.scene?.visual_prompt?.includes('cinematic')) selectedStyle.value = 'cinematic'
-  // ...можно добавить логику определения стиля из промпта, но пока оставим как есть
 })
 
 onUnmounted(() => {
@@ -262,7 +238,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Van Gogh спиннер */
 .loading-spinner {
   width: 36px;
   height: 36px;
@@ -282,7 +257,6 @@ onUnmounted(() => {
   -webkit-mask: radial-gradient(farthest-side, transparent 85%, #000 85%);
 }
 
-/* Пульсации для анимации генерации */
 @keyframes pulse-slow {
   0%, 100% { opacity: 0.2; transform: scale(1); }
   50% { opacity: 0.4; transform: scale(1.02); }

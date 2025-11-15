@@ -26,7 +26,7 @@ from app.db.auth import get_current_user
 
 router = APIRouter()
 
-# ========== ГЕНЕРАЦИЯ СЦЕНАРИЯ ==========
+#ГЕНЕРАЦИЯ СЦЕНАРИЯ
 @router.post("/generate-script")
 async def generate_script_endpoint(request: ScriptRequest, 
     user_id: str = Depends(get_current_user)):
@@ -54,7 +54,7 @@ async def generate_script_endpoint(request: ScriptRequest,
     }
 
 
-# ========== ПОЛУЧЕНИЕ ПРОЕКТОВ ==========
+#ПОЛУЧЕНИЕ ПРОЕКТОВ
 @router.get("/projects")
 async def get_all_projects_endpoint(user_id: str = Depends(get_current_user)):
     try:
@@ -64,7 +64,7 @@ async def get_all_projects_endpoint(user_id: str = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail=f"Failed to load projects: {str(e)}")
 
 
-# ========== ПОЛУЧЕНИЕ ПРОЕКТА (ИСПРАВЛЕНО!) ==========
+#ПОЛУЧЕНИЕ ПРОЕКТА
 @router.get("/projects/{project_id}")
 async def get_project_endpoint(project_id: str, user_id: str = Depends(get_current_user)):
     """
@@ -88,19 +88,19 @@ async def get_project_endpoint(project_id: str, user_id: str = Depends(get_curre
         },
         "scenes": [
             {
-                "id": s.get("id"),                              # ← ДОБАВЛЕНО
+                "id": s.get("id"),
                 "scene_number": s.get("scene_number"),
                 "action": s.get("action") or "",
                 "dialogue": s.get("dialogue") or "",
                 "voice_over": s.get("voice_over") or "",
                 "visual_prompt": s.get("visual_prompt") or "",
-                "generated_image_url": s.get("generated_image_url")  # ← ДОБАВЛЕНО
+                "generated_image_url": s.get("generated_image_url")
             } for s in scenes
         ]
     }
 
 
-# ========== ГЕНЕРАЦИЯ ВСЕХ ИЗОБРАЖЕНИЙ ==========
+#ГЕНЕРАЦИЯ ВСЕХ ИЗОБРАЖЕНИЙ
 async def _generate_images_background(project_id: str, scenes: list):
     """Фоновая задача для генерации изображений"""
     print(f"\n[BG_GENERATE_IMAGES] Starting background image generation for project: {project_id}")
@@ -148,7 +148,7 @@ async def generate_images(
     if not scenes:
         raise HTTPException(status_code=404, detail="No scenes found for this project")
 
-    # Запускаем генерацию в фоне
+    #Запускаем генерацию в фоне
     background_tasks.add_task(_generate_images_background, project_id, scenes)
 
     print(f"[GENERATE_IMAGES] Background task started, returning immediately")
@@ -161,7 +161,7 @@ async def generate_images(
     }
 
 
-# ========== ОБНОВЛЕНИЕ ОДНОЙ СЦЕНЫ (НОВЫЙ РОУТ!) ==========
+#ОБНОВЛЕНИЕ ОДНОЙ СЦЕНЫ
 @router.put("/scenes/{scene_id}")
 async def update_scene_endpoint(
     scene_id: str, 
@@ -192,7 +192,7 @@ async def update_scene_endpoint(
         raise HTTPException(status_code=500, detail=f"Failed to update scene: {str(e)}")
 
 
-# ========== ПЕРЕГЕНЕРАЦИЯ ОДНОГО ИЗОБРАЖЕНИЯ (НОВЫЙ РОУТ!) ==========
+#ПЕРЕГЕНЕРАЦИЯ ОДНОГО ИЗОБРАЖЕНИЯ
 @router.post("/regenerate-scene/{scene_id}")
 async def regenerate_scene_endpoint(
     scene_id: str,
@@ -210,7 +210,7 @@ async def regenerate_scene_endpoint(
         
         visual_prompt = scene.data.get("visual_prompt", "")
         
-        # Если передан модификатор стиля
+        #Если передан модификатор стиля
         if request and request.get("style"):
             visual_prompt = f"{request['style']}, {visual_prompt}"
         
@@ -229,7 +229,7 @@ async def regenerate_scene_endpoint(
         raise HTTPException(status_code=500, detail=f"Failed to regenerate: {str(e)}")
 
 
-# ========== ОБНОВЛЕНИЕ МЕТАДАННЫХ ПРОЕКТА (НОВЫЙ РОУТ!) ==========
+#ОБНОВЛЕНИЕ МЕТАДАННЫХ ПРОЕКТА
 @router.put("/projects/{project_id}")
 async def update_project_metadata(
     project_id: str,
@@ -259,7 +259,7 @@ async def update_project_metadata(
         raise HTTPException(status_code=500, detail=f"Failed to update project: {str(e)}")
 
 
-# ========== СТАРЫЕ РОУТЫ (для обратной совместимости) ==========
+#СТАРЫЕ РОУТЫ (для обратной совместимости)
 
 @router.get("/{project_id}/scenes", response_model=SceneListResponse)
 async def get_project_scenes_legacy(project_id: str):
@@ -313,14 +313,14 @@ async def regenerate_images(project_id: str, user_id: str = Depends(get_current_
         raise HTTPException(status_code=500, detail=f"Failed to regenerate images: {str(e)}")
     
 
-## Delete scene by scene_id
+#Delete scene by scene_id
 @router.delete("/scenes/{scene_id}")
 async def delete_scene_endpoint(scene_id: str, user_id: str = Depends(get_current_user)):
     """
     Delete a scene by ID and renumber remaining scenes
     """
     try:
-        # Получаем сцену которую удаляем
+        #Получаем сцену которую удаляем
         scene_to_delete = supabase.table("scenes").select("*").eq("id", scene_id).execute()
 
         if not scene_to_delete.data:
@@ -329,10 +329,10 @@ async def delete_scene_endpoint(scene_id: str, user_id: str = Depends(get_curren
         deleted_scene_number = scene_to_delete.data[0]["scene_number"]
         project_id = scene_to_delete.data[0]["project_id"]
 
-        # Удаляем сцену
+        #Удаляем сцену
         supabase.table("scenes").delete().eq("id", scene_id).execute()
 
-        # ВАЖНО: Перенумеровываем все сцены с номером больше удалённой
+        #Перенумеровываем все сцены с номером больше удалённой
         remaining_scenes = supabase.table("scenes").select("*").eq("project_id", project_id).gt("scene_number", deleted_scene_number).execute()
 
         for scene in remaining_scenes.data:
@@ -350,7 +350,7 @@ async def delete_scene_endpoint(scene_id: str, user_id: str = Depends(get_curren
         raise HTTPException(status_code=500, detail=f"Failed to delete scene: {str(e)}")
 
 
-## Delete project by project_id
+##Delete project by project_id
 @router.delete("/projects/{project_id}")
 async def delete_project_endpoint(project_id: str, user_id: str = Depends(get_current_user)):
 
@@ -362,7 +362,7 @@ async def delete_project_endpoint(project_id: str, user_id: str = Depends(get_cu
     return {"success": True, "message": "Project and scenes deleted successfully", "project_id": project_id}
 
 
-# ========== МОДУЛЬ 2: ГЕНЕРАЦИЯ ВИДЕО ==========
+#ГЕНЕРАЦИЯ ВИДЕО
 
 @router.post("/generate-voiceover/{project_id}")
 async def generate_voiceover_endpoint(
@@ -373,54 +373,54 @@ async def generate_voiceover_endpoint(
     Генерирует озвучку для проекта на основе voice_over полей сцен
     """
     try:
-        # Получаем все сцены проекта
+        #Получаем все сцены проекта
         scenes = get_project_scenes(project_id)
 
         if not scenes:
             raise HTTPException(status_code=404, detail="No scenes found for this project")
 
-        # Обновляем статус
+        #Обновляем статус
         update_render_status(project_id, "generating_audio")
 
-        # Собираем текст для озвучки из voice_over И dialogue полей
-        # Порядок: сначала voice_over (закадровый голос), потом dialogue (реплики персонажей)
-        # Между ними добавляем паузу
+        #Собираем текст для озвучки из voice_over И dialogue полей
+        #Порядок: сначала voice_over (закадровый голос), потом dialogue (реплики персонажей)
+        #Между ними добавляем паузу
         voiceover_parts = []
 
         for scene in sorted(scenes, key=lambda x: x.get("scene_number", 0)):
             scene_text = []
 
-            # Закадровый голос
+            #Закадровый голос
             voice_over = scene.get("voice_over", "").strip()
             if voice_over:
                 scene_text.append(voice_over)
 
-            # Диалоги персонажей (после паузы)
+            #Диалоги персонажей (после паузы)
             dialogue = scene.get("dialogue", "").strip()
             if dialogue:
-                # Добавляем небольшую паузу перед диалогом если есть закадровый текст
+                #Добавляем небольшую паузу перед диалогом если есть закадровый текст
                 if voice_over:
                     scene_text.append("...")  # Пауза ~0.5 сек в TTS
                 scene_text.append(dialogue)
 
-            # Объединяем текст сцены
+            #Объединяем текст сцены
             if scene_text:
                 voiceover_parts.append(" ".join(scene_text))
 
         if not voiceover_parts:
             raise HTTPException(status_code=400, detail="No voice_over or dialogue text found in scenes")
 
-        # Объединяем весь текст с паузами между сценами
+        #Объединяем весь текст с паузами между сценами
         full_text = ". ".join(voiceover_parts)
 
-        # Генерируем озвучку
+        #Генерируем озвучку
         voiceover_url = await generate_voiceover(full_text, lang="ru")
 
-        # Сохраняем URL в БД
+        #Сохраняем URL в БД
         update_voiceover_url(project_id, voiceover_url)
 
-        # ВАЖНО: Получаем реальную длительность аудио для точных субтитров
-        # Скачиваем аудио и определяем длительность
+        #Получаем реальную длительность аудио для точных субтитров
+        #Скачиваем аудио и определяем длительность
         print(f"[VOICEOVER] Getting audio duration for subtitles...")
         from app.service.video_service import download_from_supabase_or_url, get_audio_duration
         import tempfile
@@ -432,32 +432,32 @@ async def generate_voiceover_endpoint(
             audio_temp.write(audio_content)
             audio_temp.close()
 
-            # Получаем длительность
+            #Получаем длительность
             actual_duration = get_audio_duration(audio_temp.name)
             print(f"[VOICEOVER] Audio duration: {actual_duration}s")
 
-            # Обновляем project_time в базе
+            #Обновляем project_time в базе
             update_project_time(project_id, actual_duration)
 
-            # ИСПОЛЬЗУЕМ WHISPER для точных таймкодов + исходный текст (БЕЗ ошибок распознавания!)
+            #ИСПОЛЬЗУЕМ WHISPER для точных таймкодов + исходный текст (БЕЗ ошибок распознавания!)
             print(f"[VOICEOVER] Generating subtitles with Whisper timing + original text...")
             srt_content = generate_subtitles_from_audio(audio_temp.name, original_text=full_text)
 
-            # Если Whisper не сработал - используем fallback
+            #Если Whisper не сработал - используем fallback
             if not srt_content:
                 print(f"[VOICEOVER] Whisper failed, using fallback subtitle generation")
                 srt_content = generate_subtitles(full_text, actual_duration)
 
-            # Теперь удаляем временный файл
+            #Теперь удаляем временный файл
             os.unlink(audio_temp.name)
 
         except Exception as e:
             print(f"[VOICEOVER] Warning: Could not get audio duration: {str(e)}, using default")
             actual_duration = 30.0
-            # Fallback - простая генерация субтитров
+            #Fallback - простая генерация субтитров
             srt_content = generate_subtitles(full_text, actual_duration)
 
-        # Загружаем субтитры
+        #Загружаем субтитры
         subtitle_url = await upload_subtitles(srt_content, project_id)
         update_subtitle_url(project_id, subtitle_url)
 
@@ -493,7 +493,7 @@ async def _render_video_background(
     print(f"[RENDER_BG] Duration: {duration}")
 
     try:
-        # Создаем видео
+        #Создаем видео
         print(f"[RENDER_BG] Calling create_slideshow_video...")
         video_url = await create_slideshow_video(
             scenes=scenes_with_images,
@@ -505,7 +505,7 @@ async def _render_video_background(
 
         print(f"[RENDER_BG] Video created successfully: {video_url}")
 
-        # Сохраняем URL видео
+        #Сохраняем URL видео
         update_final_video_url(project_id, video_url)
         update_render_status(project_id, "completed")
         print(f"[RENDER_BG] Render completed!")
@@ -528,32 +528,32 @@ async def render_video_endpoint(
     Запускает рендеринг видео в фоновой задаче и сразу возвращает ответ
     """
     try:
-        # Получаем проект и сцены
+        #Получаем проект и сцены
         project = get_project(project_id)
         scenes = get_project_scenes(project_id)
 
         if not scenes:
             raise HTTPException(status_code=404, detail="No scenes found")
 
-        # Проверяем, что у всех сцен есть изображения
+        #Проверяем, что у всех сцен есть изображения
         scenes_with_images = [s for s in scenes if s.get("generated_image_url")]
 
         if not scenes_with_images:
             raise HTTPException(status_code=400, detail="No generated images found. Please generate images first.")
 
-        # Обновляем статус
+        #Обновляем статус
         update_render_status(project_id, "rendering_video")
 
-        # Получаем данные рендера
+        #Получаем данные рендера
         render_data = get_project_render_data(project_id)
         voiceover_url = render_data.get("voiceover_url")
         subtitle_url = render_data.get("subtitle_url")
         duration = render_data.get("project_time", 30.0)
 
-        # Получаем background из настроек
+        #Получаем background из настроек
         background_style = settings.get("background", "minecraft")
 
-        # Загружаем субтитры если есть
+        #Загружаем субтитры если есть
         subtitle_content = None
         if subtitle_url:
             try:
@@ -562,7 +562,7 @@ async def render_video_endpoint(
             except Exception as e:
                 print(f"Warning: Could not download subtitles: {str(e)}")
 
-        # Запускаем рендеринг в фоне
+        #Запускаем рендеринг в фоне
         background_tasks.add_task(
             _render_video_background,
             project_id=project_id,
@@ -573,7 +573,7 @@ async def render_video_endpoint(
             background_style=background_style
         )
 
-        # Сразу возвращаем ответ
+        #Сразу возвращаем ответ
         return {
             "success": True,
             "project_id": project_id,

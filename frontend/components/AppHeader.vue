@@ -1,4 +1,3 @@
-<!-- components/VanGoghHeader.vue -->
 <template>
   <header 
     class="navbar relative bg-gradient-to-r from-indigo-950/95 via-purple-950/95 to-blue-950/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-yellow-400/20 overflow-visible"
@@ -52,7 +51,6 @@
     
     <div class="navbar-end">
       <div v-if="user">
-        <!-- весь твой dropdown-код -->
         <div class="relative" ref="dropdown">
           <button @click="toggleMenu" class="btn btn-ghost btn-circle">
             <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-300 to-blue-500 flex items-center justify-center text-white font-bold border border-yellow-300/40">
@@ -91,7 +89,6 @@ const createNewProject = () => {
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value
   if (menuOpen.value) {
-    // Закрыть меню при клике вне
     setTimeout(() => {
       const handleClickOutside = (e) => {
         if (dropdown.value && !dropdown.value.contains(e.target)) {
@@ -111,7 +108,7 @@ const handleSignOut = async () => {
 </script>
 
 <style scoped>
-/* Убедимся, что glow исчезает плавно */
+
 header {
   transition: background 0.3s, border-color 0.3s;
 }

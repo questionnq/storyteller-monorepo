@@ -75,7 +75,7 @@ const backgrounds = [
 </script>
 
 <style scoped>
-/* Анимации из основной страницы */
+
 @keyframes minecraftPulse {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.8; }

@@ -1,6 +1,6 @@
 export const useVideo = () => {
   const videoUrl = ref(null)
-  const status = ref('pending') // pending, processing, done, failed
+  const status = ref('pending')
   const error = ref(null)
   
   const startRender = async (projectId, settings) => {

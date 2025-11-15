@@ -1,4 +1,3 @@
-// middleware/auth.global.js
 export default defineNuxtRouteMiddleware((to) => {
   const user = useSupabaseUser()
   

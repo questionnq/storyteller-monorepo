@@ -1,8 +1,6 @@
 <template>
   <div class="bg-slate-800/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 relative group">
-    <!-- Шапка сцены -->
     <div class="flex justify-between items-start mb-5">
-      <!-- Номер сцены -->
       <div class="flex items-center gap-3">
         <div class="bg-gradient-to-br from-yellow-400 to-blue-500 text-white rounded-2xl w-12 h-12 flex items-center justify-center font-bold text-lg shadow-sm">
           {{ scene.scene_number }}
@@ -51,7 +49,6 @@
         </div>
       </div>
 
-      <!-- Кнопка удаления -->
       <button 
         class="btn btn-ghost btn-sm btn-circle opacity-0 group-hover:opacity-100 transition-opacity"
         @click="$emit('delete', scene.id)"
@@ -63,7 +60,6 @@
       </button>
     </div>
 
-    <!-- Описание действия -->
     <div class="mb-5">
       <label class="flex items-center gap-2.5 mb-2.5">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-yellow-400/90">
@@ -80,7 +76,6 @@
       ></textarea>
     </div>
 
-    <!-- Диалоги -->
     <div class="mb-5">
       <label class="flex items-center gap-2.5 mb-2.5">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-blue-400/90">
@@ -96,7 +91,6 @@
       ></textarea>
     </div>
 
-    <!-- Текст за кадром -->
     <div class="mb-5">
       <label class="flex items-center gap-2.5 mb-2.5">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-purple-400/90">
@@ -113,7 +107,6 @@
       ></textarea>
     </div>
 
-    <!-- Визуальный промпт -->
     <div class="mb-5">
       <label class="flex items-center gap-2.5 mb-2.5">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-emerald-400/90">

@@ -7,11 +7,11 @@ from app.config import SUPABASE_URL, SUPABASE_KEY
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-### ADD PROJECT WITH SCENES
+###ADD PROJECT WITH SCENES
 def create_project_with_scenes(script: dict, user_prompt: str, time: float, genre: str | None, style: str | None, user_id: str) -> str:
     formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # 1️⃣ Создаем проект
+    #Создаем проект
     project_data = {
         "title": script.get("title"),
         "description": user_prompt,
@@ -29,7 +29,7 @@ def create_project_with_scenes(script: dict, user_prompt: str, time: float, genr
     
     project_id = res.data[0]["id"]
 
-    # 2️⃣ Создаём сцену
+    #Создаём сцену
     scenes_data = []
     for scene in script.get("scenes", []):
         scenes_data.append({
@@ -49,18 +49,18 @@ def create_project_with_scenes(script: dict, user_prompt: str, time: float, genr
 
     return project_id
 
-## Get project by ID and add cache
+#Get project by ID and add cache
 def get_project(project_id: str):
     res = supabase.table("projects").select("*").eq("id", project_id).single().execute()
     return res.data
 
-## Get scenes by project ID and add cache
+#Get scenes by project ID and add cache
 def get_project_scenes(project_id: str):
     res = supabase.table("scenes").select("*").eq("project_id", project_id).order("scene_number").execute()
     return res.data
 
 
-## Get all projects by user ID and add cache
+#Get all projects by user ID and add cache
 def get_all_projects(user_id: str) -> List[dict]:
     res = supabase.table("projects")\
         .select("id, title, description, created_at, project_time, tone, style")\
@@ -68,12 +68,12 @@ def get_all_projects(user_id: str) -> List[dict]:
         .order("created_at", desc=True).execute()
     return res.data
 
-## Get scenes by project ID
+#Get scenes by project ID
 def get_visual_promt_by_project(project_id: str):
     res = supabase.table("scenes").select("id, visual_prompt").eq("project_id", project_id).execute()
     return res.data
 
-## Update scene with generated image URL
+#Update scene with generated image URL
 def update_scene_image_url(scene_id: str, image_url: str):
     res = supabase.table("scenes").update({"generated_image_url": image_url}).eq("id", scene_id).execute()
     return res.data
@@ -91,14 +91,14 @@ def get_scenes_by_project(project_id: str):
             .execute()
 
         if not res.data:
-            return []  # если сцен нет — возвращаем пустой список
+            return []  #если сцен нет — возвращаем пустой список
 
         return res.data
 
     except Exception as e:
         raise RuntimeError(f"Failed to fetch scenes: {str(e)}")
     
-## Get count of scenes in project
+#Get count of scenes in project
 def update_scene(project_id: str, scene_number: int, update_data: dict):
     try:
         res = supabase.table("scenes") \
@@ -110,18 +110,18 @@ def update_scene(project_id: str, scene_number: int, update_data: dict):
         if not res.data:
             raise ValueError(f"Scene {scene_number} not found for project {project_id}")
 
-        return res.data[0]  # возвращаем обновлённую строку
+        return res.data[0]  #возвращаем обновлённую строку
 
     except Exception as e:
         raise RuntimeError(f"Database update failed: {str(e)}")
     
-## Delete project by ID
+##Delete project by ID
 def delete_project_by_id(project_id: str):
     try:
-        # Удаляем сцены, связанные с проектом
+        #Удаляем сцены, связанные с проектом
         supabase.table("scenes").delete().eq("project_id", project_id).execute()
 
-        # Удаляем сам проект
+        #Удаляем сам проект
         res = supabase.table("projects").delete().eq("id", project_id).execute()
 
         return res.data
@@ -130,28 +130,28 @@ def delete_project_by_id(project_id: str):
         raise RuntimeError(f"Failed to delete project: {str(e)}")
 
 
-## Update voiceover URL for project
+#Update voiceover URL for project
 def update_voiceover_url(project_id: str, voiceover_url: str):
     """Обновляет URL озвучки для проекта"""
     res = supabase.table("projects").update({"voiceover_url": voiceover_url}).eq("id", project_id).execute()
     return res.data
 
 
-## Update subtitle URL for project
+#Update subtitle URL for project
 def update_subtitle_url(project_id: str, subtitle_url: str):
     """Обновляет URL субтитров для проекта"""
     res = supabase.table("projects").update({"subtitle_url": subtitle_url}).eq("id", project_id).execute()
     return res.data
 
 
-## Update project time (duration)
+#Update project time (duration)
 def update_project_time(project_id: str, project_time: float):
     """Обновляет длительность проекта в секундах"""
     res = supabase.table("projects").update({"project_time": project_time}).eq("id", project_id).execute()
     return res.data
 
 
-## Get random fallback image
+#Get random fallback image
 def get_random_fallback_image():
     """Получает случайное фоллбэк изображение из базы данных"""
     import random
@@ -171,14 +171,14 @@ def get_random_fallback_image():
         return None
 
 
-## Update final video URL for project
+#Update final video URL for project
 def update_final_video_url(project_id: str, final_video_url: str):
     """Обновляет URL финального видео для проекта"""
     res = supabase.table("projects").update({"final_video_url": final_video_url}).eq("id", project_id).execute()
     return res.data
 
 
-## Update render status for project
+#Update render status for project
 def update_render_status(project_id: str, status: str):
     """Обновляет статус рендера для проекта
 
@@ -188,7 +188,7 @@ def update_render_status(project_id: str, status: str):
     return res.data
 
 
-## Get project with voiceover and video data
+#Get project with voiceover and video data
 def get_project_render_data(project_id: str):
     """Получает данные проекта для рендеринга (включая URLs озвучки и видео)"""
     res = supabase.table("projects").select(

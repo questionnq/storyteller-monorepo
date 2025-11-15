@@ -3,7 +3,7 @@ import { ref } from 'vue'
 const notification = ref({
   show: false,
   message: '',
-  type: 'error' // error, success, info
+  type: 'error'
 })
 
 export const useNotification = () => {

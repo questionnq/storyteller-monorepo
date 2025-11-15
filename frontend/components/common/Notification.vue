@@ -26,12 +26,10 @@
         </svg>
       </div>
 
-      <!-- Текст -->
       <div class="flex-1 text-sm font-medium truncate">
         {{ notification.message }}
       </div>
 
-      <!-- Кнопка закрытия -->
       <button 
         @click="close" 
         class="btn btn-ghost btn-circle btn-xs flex-shrink-0 hover:bg-white/10 transition-colors"

@@ -1,6 +1,5 @@
 <template>
   <div class="flex flex-col items-center justify-center p-8 text-center animate-fade-in">
-    <!-- Кастомный золотой спиннер -->
     <div class="loading-spinner mb-4">
       <div class="loading-inner"></div>
     </div>
@@ -25,7 +24,6 @@ defineProps({
   to { opacity: 1; }
 }
 
-/* Кастомный спиннер в стиле Van Gogh */
 .loading-spinner {
   width: 36px;
   height: 36px;

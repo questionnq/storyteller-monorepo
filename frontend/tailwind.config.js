@@ -12,9 +12,9 @@ module.exports = {
       colors: {
         
         'vg-bg': {
-          DEFAULT: '#121224',        // основной фон
-          softer: '#16162a',        // чуть светлее
-          card: '#1a1a30',          // для карточек
+          DEFAULT: '#121224',     
+          softer: '#16162a',        
+          card: '#1a1a30',        
         }
       }
     },

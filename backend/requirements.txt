@@ -50,7 +50,6 @@ uvicorn==0.34.3
 websockets==15.0.1
 yarg==0.1.10
 yarl==1.22.0
-# moviepy==1.0.3  # REMOVED: Too memory-heavy for 512MB limit, replaced with direct ffmpeg
 gTTS==2.5.4
 Pillow==11.0.0
 faster-whisper==1.0.3  # Оптимизированная версия Whisper (меньше памяти, быстрее)
