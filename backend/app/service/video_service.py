@@ -35,6 +35,65 @@ else:
         print(f"[VIDEO] WARNING: No ffmpeg found, will try system commands")
 
 
+def convert_srt_to_ass(srt_content: str) -> str:
+    """
+    Конвертирует SRT субтитры в ASS формат с явным указанием UTF-8
+    ASS формат лучше поддерживает кириллицу в ffmpeg
+
+    Args:
+        srt_content: Содержимое SRT файла
+
+    Returns:
+        str: Содержимое ASS файла
+    """
+    # ASS заголовок с явным указанием UTF-8
+    ass_header = """[Script Info]
+Title: Generated Subtitles
+ScriptType: v4.00+
+Collisions: Normal
+PlayDepth: 0
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Impact,18,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,3,0,2,20,20,40,0
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+"""
+
+    # Парсим SRT и конвертируем в ASS
+    ass_events = []
+    srt_blocks = srt_content.strip().split('\n\n')
+
+    for block in srt_blocks:
+        lines = block.strip().split('\n')
+        if len(lines) < 3:
+            continue
+
+        # Пропускаем номер субтитра (первая строка)
+        # Вторая строка - таймкоды
+        timecode = lines[1]
+        # Третья и далее - текст
+        text = ' '.join(lines[2:])
+
+        # Конвертируем SRT timestamp (00:00:01,500) в ASS timestamp (0:00:01.50)
+        if '-->' in timecode:
+            start, end = timecode.split('-->')
+            start = start.strip().replace(',', '.')[:-1]  # Убираем последнюю цифру миллисекунд
+            end = end.strip().replace(',', '.')[:-1]
+
+            # Убираем leading zero в часах для ASS формата
+            if start.startswith('00:'):
+                start = '0:' + start[3:]
+            if end.startswith('00:'):
+                end = '0:' + end[3:]
+
+            # Формат ASS события: Dialogue: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
+            ass_events.append(f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}")
+
+    return ass_header + '\n'.join(ass_events)
+
+
 def download_from_supabase_or_url(url: str, file_name_hint: str = None) -> bytes:
     """
     Скачивает файл из Supabase Storage или по прямому URL
@@ -262,13 +321,18 @@ async def create_slideshow_video(
         # Сохраняем субтитры во временный файл если есть
         subtitle_path = None
         if subtitle_content:
-            print(f"[VIDEO_SERVICE] Saving subtitles to temp file...")
-            subtitle_temp = tempfile.NamedTemporaryFile(delete=False, suffix=".srt", mode='w', encoding='utf-8')
-            subtitle_temp.write(subtitle_content)
+            print(f"[VIDEO_SERVICE] Converting SRT to ASS for better UTF-8 support...")
+            # Конвертируем SRT в ASS для лучшей поддержки кириллицы
+            ass_content = convert_srt_to_ass(subtitle_content)
+
+            print(f"[VIDEO_SERVICE] Saving ASS subtitles to temp file...")
+            # ВАЖНО: Используем utf-8-sig для добавления BOM
+            subtitle_temp = tempfile.NamedTemporaryFile(delete=False, suffix=".ass", mode='w', encoding='utf-8-sig')
+            subtitle_temp.write(ass_content)
             subtitle_temp.close()
             subtitle_path = subtitle_temp.name
             temp_files.append(subtitle_path)
-            print(f"[VIDEO_SERVICE] Subtitles saved to: {subtitle_path}")
+            print(f"[VIDEO_SERVICE] ASS subtitles saved to: {subtitle_path}")
 
         # КЛЮЧЕВАЯ ОПТИМИЗАЦИЯ: Используем ffmpeg напрямую
         output_temp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
@@ -387,17 +451,27 @@ def build_video_with_ffmpeg(
 
         # Добавляем субтитры НА ФОН (если есть), ДО наложения слайд-шоу
         if subtitle_path:
-            # Экранируем путь для ffmpeg
-            escaped_subtitle_path = subtitle_path.replace('\\', '/').replace(':', '\\\\:')
+            # Экранируем путь для ffmpeg (специфично для Windows и Linux)
+            # 1. Заменяем обратные слэши на прямые (Windows -> POSIX)
+            # 2. Экранируем двоеточие после буквы диска (C: -> C\:)
+            # 3. Экранируем специальные символы для filter_complex
+            escaped_subtitle_path = subtitle_path.replace('\\', '/')
+            # Для Windows путей экранируем двоеточие после буквы диска
+            import re
+            escaped_subtitle_path = re.sub(r'^([A-Za-z]):', r'\1\\:', escaped_subtitle_path)
+            # Экранируем одиночные кавычки и другие спецсимволы для ffmpeg
+            escaped_subtitle_path = escaped_subtitle_path.replace("'", r"'\\\''")
+
             # Субтитры в стиле TikTok/YouTube Shorts:
-            # - charenc=UTF-8 (ВАЖНО: для корректной кириллицы)
-            # - Impact шрифт (ВАЖНО: должен быть установлен в системе)
-            # - FontSize=18 (уменьшен с 24 для лучшей читаемости)
-            # - Белый текст с чёрной обводкой (Outline=3 для лучшей читаемости)
+            # - ASS формат с UTF-8-sig BOM для корректной кириллицы
+            # - Impact шрифт (установлен в Docker контейнере)
+            # - FontSize=18 для лучшей читаемости
+            # - Белый текст с чёрной обводкой (Outline=3)
             # - Центрирование по низу (Alignment=2)
-            # - MarginV=40 (УМЕНЬШЕН с 120 - опускаем субтитры ниже, чтобы они были ВИДНЫ под слайдшоу)
+            # - MarginV=40 (субтитры внизу, под слайдшоу)
             # - MarginL/MarginR=20 (отступы по бокам)
-            subtitle_on_bg = f"[bg_raw]subtitles='{escaped_subtitle_path}':charenc=UTF-8:force_style='FontName=Impact,FontSize=18,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,BackColour=&H00000000&,Bold=1,Outline=3,Shadow=0,Alignment=2,MarginV=40,MarginL=20,MarginR=20'[bg]"
+            # ВАЖНО: Используем ass фильтр вместо subtitles для лучшей поддержки кодировок
+            subtitle_on_bg = f"[bg_raw]ass='{escaped_subtitle_path}'[bg]"
             filter_parts.append(subtitle_on_bg)
         else:
             # Если нет субтитров - просто переименовываем label
