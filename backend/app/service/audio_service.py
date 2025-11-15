@@ -323,10 +323,11 @@ async def upload_subtitles(srt_content: str, project_id: str) -> str:
         file_name = f"subtitles_{project_id}.srt"
 
         # Используем upsert для перезаписи файла если он уже существует
+        # ВАЖНО: Добавляем UTF-8 BOM для корректного отображения кириллицы в ffmpeg
         res = supabase.storage.from_("videos").upload(
             path=file_name,
-            file=srt_content.encode('utf-8'),
-            file_options={"content-type": "text/plain", "upsert": "true"}
+            file='\ufeff'.encode('utf-8') + srt_content.encode('utf-8'),
+            file_options={"content-type": "text/plain; charset=utf-8", "upsert": "true"}
         )
 
         # Получаем публичный URL

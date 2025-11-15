@@ -390,13 +390,14 @@ def build_video_with_ffmpeg(
             # Экранируем путь для ffmpeg
             escaped_subtitle_path = subtitle_path.replace('\\', '/').replace(':', '\\\\:')
             # Субтитры в стиле TikTok/YouTube Shorts:
+            # - charenc=UTF-8 (ВАЖНО: для корректной кириллицы)
             # - Impact шрифт (ВАЖНО: должен быть установлен в системе)
             # - FontSize=18 (уменьшен с 24 для лучшей читаемости)
-            # - Белый текст с чёрной обводкой (Outline=2)
+            # - Белый текст с чёрной обводкой (Outline=3 для лучшей читаемости)
             # - Центрирование по низу (Alignment=2)
-            # - MarginV=120 (увеличен отступ снизу чтобы НЕ перекрывать слайдшоу)
-            # - MarginL/MarginR=30 (отступы по бокам)
-            subtitle_on_bg = f"[bg_raw]subtitles='{escaped_subtitle_path}':force_style='FontName=Impact,FontSize=18,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,BackColour=&H00000000&,Bold=1,Outline=2,Shadow=0,Alignment=2,MarginV=120,MarginL=30,MarginR=30'[bg]"
+            # - MarginV=40 (УМЕНЬШЕН с 120 - опускаем субтитры ниже, чтобы они были ВИДНЫ под слайдшоу)
+            # - MarginL/MarginR=20 (отступы по бокам)
+            subtitle_on_bg = f"[bg_raw]subtitles='{escaped_subtitle_path}':charenc=UTF-8:force_style='FontName=Impact,FontSize=18,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,BackColour=&H00000000&,Bold=1,Outline=3,Shadow=0,Alignment=2,MarginV=40,MarginL=20,MarginR=20'[bg]"
             filter_parts.append(subtitle_on_bg)
         else:
             # Если нет субтитров - просто переименовываем label
@@ -419,14 +420,14 @@ def build_video_with_ffmpeg(
             end_time = start_time + img_info["duration"]
             duration = img_info["duration"]
 
-            # Ken Burns эффект (медленный zoom): от 1.0 до 1.15 масштаба
+            # Ken Burns эффект (активный zoom): от 1.0 до 1.25 масштаба
             # zoompan параметры:
-            # z - масштаб: 1.0 + (on/продолжительность) * 0.15 = плавный zoom от 1.0 до 1.15
+            # z - масштаб: 1.0 + (on/продолжительность) * 0.25 = плавный zoom от 1.0 до 1.25
             # d - длительность в кадрах
             # s - размер выходного кадра
-            # fps - кадровая частота
-            total_frames = int(duration * 24)
-            zoom_filter = f"[{img_input_idx}:v]scale={img_info['width']}:{img_info['height']},zoompan=z='min(1.0+on/{total_frames}*0.15,1.15)':d={total_frames}:s={img_info['width']}x{img_info['height']}:fps=24[img{i}]"
+            # fps - кадровая частота (30 FPS теперь)
+            total_frames = int(duration * 30)  # 30 FPS вместо 24
+            zoom_filter = f"[{img_input_idx}:v]scale={img_info['width']}:{img_info['height']},zoompan=z='min(1.0+on/{total_frames}*0.25,1.25)':d={total_frames}:s={img_info['width']}x{img_info['height']}:fps=30[img{i}]"
             filter_parts.append(zoom_filter)
 
             if i < len(images) - 1:
