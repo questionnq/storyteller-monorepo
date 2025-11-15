@@ -129,61 +129,75 @@ async def generate_voiceover(text: str, lang: str = "ru", speed: float = 1.3) ->
 
 def generate_subtitles_from_audio(audio_path: str) -> str:
     """
-    Генерирует точные субтитры из аудио файла используя Whisper
-    Это даёт идеальную синхронизацию с озвучкой
+    Генерирует точные субтитры из аудио файла используя faster-whisper
+    Это даёт идеальную синхронизацию с озвучкой и работает быстрее/экономнее
 
     Args:
         audio_path: Путь к аудио файлу
 
     Returns:
-        str: Содержимое SRT файла
+        str: Содержимое SRT файла (или пустая строка если Whisper недоступен)
     """
     try:
+        # Проверяем доступность faster-whisper
+        try:
+            from faster_whisper import WhisperModel
+            print(f"[WHISPER] faster-whisper module available")
+        except ImportError:
+            print(f"[WHISPER] ⚠️ faster-whisper not installed, skipping subtitle generation from audio")
+            return ""
+
         print(f"[WHISPER] Generating subtitles from audio: {audio_path}")
 
-        # Используем whisper через командную строку
-        # whisper audio.mp3 --model tiny --language ru --output_format srt --output_dir /tmp
-        output_dir = tempfile.gettempdir()
+        # Используем faster-whisper (CPU mode для экономии памяти)
+        # tiny - самая маленькая модель (~40MB), base ~75MB
+        model = WhisperModel("tiny", device="cpu", compute_type="int8")
 
-        cmd = [
-            "whisper",
+        print(f"[WHISPER] Transcribing audio...")
+        segments, info = model.transcribe(
             audio_path,
-            "--model", "base",  # base - лучший баланс скорости/точности
-            "--language", "ru",
-            "--output_format", "srt",
-            "--output_dir", output_dir,
-            "--word_timestamps", "True",  # Точная синхронизация по словам
-            "--prepend_punctuations", "\"¿([{-",
-            "--append_punctuations", "\".,!?:)]}"
-        ]
+            language="ru",
+            word_timestamps=True,  # Точная синхронизация по словам
+            vad_filter=True,  # Фильтрация тишины
+        )
 
-        print(f"[WHISPER] Running command: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        print(f"[WHISPER] Detected language: {info.language} (probability: {info.language_probability:.2f})")
 
-        if result.returncode == 0:
-            # Whisper создаёт файл с именем исходного файла + .srt
-            base_name = os.path.splitext(os.path.basename(audio_path))[0]
-            srt_path = os.path.join(output_dir, f"{base_name}.srt")
+        # Генерируем SRT контент
+        srt_lines = []
+        segment_count = 0
 
-            if os.path.exists(srt_path):
-                with open(srt_path, 'r', encoding='utf-8') as f:
-                    srt_content = f.read()
+        for segment in segments:
+            segment_count += 1
+            # Форматируем время в SRT формат (HH:MM:SS,mmm)
+            start_time = format_timestamp_srt(segment.start)
+            end_time = format_timestamp_srt(segment.end)
 
-                # Удаляем временный файл
-                os.unlink(srt_path)
+            # Добавляем сегмент в SRT
+            srt_lines.append(f"{segment_count}")
+            srt_lines.append(f"{start_time} --> {end_time}")
+            srt_lines.append(segment.text.strip())
+            srt_lines.append("")  # Пустая строка между сегментами
 
-                print(f"[WHISPER] Successfully generated {len(srt_content)} bytes of subtitles")
-                return srt_content
-            else:
-                print(f"[WHISPER] SRT file not found: {srt_path}")
-                return ""
-        else:
-            print(f"[WHISPER] Error: {result.stderr}")
-            return ""
+        srt_content = "\n".join(srt_lines)
+        print(f"[WHISPER] Successfully generated {segment_count} subtitle segments ({len(srt_content)} bytes)")
+
+        return srt_content
 
     except Exception as e:
         print(f"[WHISPER] Exception: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return ""
+
+
+def format_timestamp_srt(seconds: float) -> str:
+    """Форматирует timestamp в SRT формат (HH:MM:SS,mmm)"""
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    millis = int((seconds % 1) * 1000)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
 
 
 def generate_subtitles(text: str, duration: float, start_offset: float = 0.1) -> str:
