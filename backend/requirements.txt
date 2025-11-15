@@ -54,5 +54,6 @@ yarl==1.22.0
 gTTS==2.5.4
 Pillow==11.0.0
 openai-whisper==20231117  # Для генерации субтитров из аудио
-# ffmpeg и ffprobe устанавливаются системно через apt-get в render-build.sh
+ffmpeg-python==0.2.0  # Python wrapper для ffmpeg
+imageio-ffmpeg==0.5.1  # Статические бинарники ffmpeg для Python (работает на Render)
 

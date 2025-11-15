@@ -9,6 +9,16 @@ from app.db.supa_request import supabase
 import subprocess
 import json
 
+# Для Render.com: используем статические бинарники ffmpeg из imageio-ffmpeg
+try:
+    import imageio_ffmpeg
+    FFMPEG_BINARY = imageio_ffmpeg.get_ffmpeg_exe()
+    print(f"[AUDIO] Using imageio-ffmpeg binary: {FFMPEG_BINARY}")
+except ImportError:
+    # Локальная разработка - используем системные
+    FFMPEG_BINARY = "ffmpeg"
+    print(f"[AUDIO] Using system ffmpeg")
+
 
 async def generate_voiceover(text: str, lang: str = "ru", speed: float = 1.3) -> str:
     """
@@ -51,7 +61,7 @@ async def generate_voiceover(text: str, lang: str = "ru", speed: float = 1.3) ->
             atempo_value = min(max(speed, 0.5), 2.0)
 
             ffmpeg_cmd = [
-                "ffmpeg", "-y",
+                FFMPEG_BINARY, "-y",
                 "-i", temp_path,
                 "-filter:a", f"atempo={atempo_value}",
                 "-vn",  # Только аудио

@@ -13,6 +13,18 @@ from typing import List, Dict
 from PIL import Image
 from app.db.supa_request import supabase
 
+# Для Render.com: используем статические бинарники ffmpeg из imageio-ffmpeg
+try:
+    import imageio_ffmpeg
+    FFMPEG_BINARY = imageio_ffmpeg.get_ffmpeg_exe()
+    FFPROBE_BINARY = imageio_ffmpeg.get_ffmpeg_exe().replace('ffmpeg', 'ffprobe')
+    print(f"[VIDEO] Using imageio-ffmpeg binaries: {FFMPEG_BINARY}")
+except ImportError:
+    # Локальная разработка - используем системные
+    FFMPEG_BINARY = "ffmpeg"
+    FFPROBE_BINARY = "ffprobe"
+    print(f"[VIDEO] Using system ffmpeg/ffprobe")
+
 
 def download_from_supabase_or_url(url: str, file_name_hint: str = None) -> bytes:
     """
@@ -73,7 +85,7 @@ def get_audio_duration(audio_path: str) -> float:
     """
     try:
         cmd = [
-            "ffprobe",
+            FFPROBE_BINARY,
             "-v", "error",
             "-show_entries", "format=duration",
             "-of", "json",
@@ -426,7 +438,7 @@ def build_video_with_ffmpeg(
         print(f"[FFMPEG] Filter preview: {filter_complex[:300]}...")  # Показываем первые 300 символов
 
         # Строим команду ffmpeg
-        cmd = ["ffmpeg", "-y"]  # -y для перезаписи
+        cmd = [FFMPEG_BINARY, "-y"]  # -y для перезаписи
 
         # Входы: фон + все изображения + аудио (ВСЕ ВХОДЫ ДОЛЖНЫ БЫТЬ ДО ФИЛЬТРОВ!)
         # ВАЖНО: stream_loop -1 для бесконечного зацикливания фонового видео
