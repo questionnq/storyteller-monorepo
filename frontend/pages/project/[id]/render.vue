@@ -288,7 +288,290 @@ const api = useApi()
 const { generateVoiceover: apiGenerateVoiceover, startRender: apiStartRender, getRenderStatus } = api
 const { user } = useSupabaseAuth()
 
-// ... твой оригинальный скрипт без изменений ...
+const project = ref(null)
+const audioUrl = ref(null)
+const subtitles = ref(null)
+const isGeneratingAudio = ref(false)
+const videoUrl = ref(null)
+const status = ref('pending') // pending, voiceover, processing, done, failed
+const error = ref(null)
+const progress = ref(0)
+const progressText = ref('')
+
+const renderSettings = ref({
+  background: 'minecraft'  // По умолчанию Minecraft
+})
+
+const backgrounds = [
+  {
+    value: 'minecraft',
+    name: 'Minecraft Паркур',
+    description: 'Классический брейнрот фон',
+    emoji: '🎮'
+  },
+  {
+    value: 'subway',
+    name: 'Subway Surfers',
+    description: 'Динамический раннер',
+    emoji: '🏃'
+  },
+  {
+    value: 'abstract',
+    name: 'Абстрактные пятна',
+    description: 'Минималистичный стиль',
+    emoji: '🎨'
+  }
+]
+
+// Вычисляемое свойство для отображения статуса
+const renderStatus = computed(() => {
+  if (videoUrl.value) return 'completed'
+  if (status.value === 'processing') return 'rendering'
+  if (audioUrl.value) return 'audio_ready'
+  return 'pending'
+})
+
+// Проверяем, есть ли сгенерированные изображения
+const hasGeneratedImages = computed(() => {
+  return project.value?.scenes?.some(scene => scene.generated_image_url)
+})
+
+// Проверка кэша при монтировании
+onMounted(async () => {
+  const projectId = route.params.id
+
+  try {
+    // Загружаем проект через useApi
+    const response = await api.getProject(projectId)
+
+    project.value = {
+      id: response.id,
+      title: response.title || 'Проект',
+      scenes: response.scenes || []
+    }
+
+    // Проверяем кэш
+    checkCachedFiles()
+  } catch (err) {
+    console.error('Ошибка загрузки проекта:', err)
+    error.value = 'Не удалось загрузить проект'
+  }
+
+  // Горячие клавиши
+  document.addEventListener('keydown', handleKeyboardShortcuts)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeyboardShortcuts)
+})
+
+const checkCachedFiles = async () => {
+  try {
+    const projectId = route.params.id
+    const cached = localStorage.getItem(`render_cache_${projectId}`)
+
+    if (cached) {
+      const cache = JSON.parse(cached)
+
+      if (cache.audioUrl && cache.subtitles) {
+        audioUrl.value = cache.audioUrl
+        subtitles.value = cache.subtitles
+        status.value = 'voiceover'
+      }
+
+      if (cache.videoUrl) {
+        videoUrl.value = cache.videoUrl
+        status.value = 'done'
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка при проверке кэша:', error)
+  }
+}
+
+const updateCache = () => {
+  const projectId = route.params.id
+  const cache = {
+    audioUrl: audioUrl.value,
+    subtitles: subtitles.value,
+    videoUrl: videoUrl.value,
+    timestamp: Date.now()
+  }
+  localStorage.setItem(`render_cache_${projectId}`, JSON.stringify(cache))
+}
+
+const handleError = (error, context) => {
+  console.error(`Ошибка в ${context}:`, error)
+  
+  // Разные сообщения для разных типов ошибок
+  if (error.message?.includes('network')) {
+    error.value = 'Ошибка сети. Проверьте подключение к интернету.'
+  } else if (error.message?.includes('timeout')) {
+    error.value = 'Превышено время ожидания. Попробуйте снова.'
+  } else {
+    error.value = error.message || 'Произошла неизвестная ошибка'
+  }
+}
+
+const handleKeyboardShortcuts = (event) => {
+  // Ctrl/Cmd + Enter для запуска рендера
+  if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+    if (status.value === 'voiceover' && !videoUrl.value) {
+      startRender()
+    }
+  }
+  
+  // Escape для отмены рендера
+  if (event.key === 'Escape' && status.value === 'processing') {
+    // Логика отмены рендера (заглушка)
+    console.log('Отмена рендеринга...')
+  }
+}
+
+const generateVoiceover = async () => {
+  console.log('[generateVoiceover] Starting...')
+  if (!project.value) {
+    console.error('[generateVoiceover] No project loaded')
+    return
+  }
+
+  isGeneratingAudio.value = true
+  error.value = null
+
+  try {
+    console.log('[generateVoiceover] Calling API for project:', route.params.id)
+    const result = await apiGenerateVoiceover(route.params.id)
+    console.log('[generateVoiceover] API Result:', result)
+
+    // Сохраняем URLs
+    audioUrl.value = result.voiceover_url
+    const subtitleUrl = result.subtitle_url
+
+    console.log('[generateVoiceover] Audio URL:', audioUrl.value)
+    console.log('[generateVoiceover] Subtitle URL:', subtitleUrl)
+
+    // Загружаем содержимое субтитров для отображения
+    if (subtitleUrl) {
+      try {
+        const srtResponse = await fetch(subtitleUrl)
+        subtitles.value = await srtResponse.text()
+        console.log('[generateVoiceover] Subtitles loaded')
+      } catch (err) {
+        console.error('[generateVoiceover] Failed to load subtitles:', err)
+      }
+    }
+
+    status.value = 'voiceover'
+    updateCache()
+  } catch (err) {
+    console.error('[generateVoiceover] Error:', err)
+    handleError(err, 'generateVoiceover')
+  } finally {
+    isGeneratingAudio.value = false
+  }
+}
+
+const startRender = async () => {
+  console.log('[startRender] Starting...')
+  console.log('[startRender] Has images:', hasGeneratedImages.value)
+
+  status.value = 'processing'
+  error.value = null
+  progress.value = 10
+  progressText.value = 'Запуск рендеринга...'
+
+  try {
+    console.log('[startRender] Calling API for project:', route.params.id)
+    const result = await apiStartRender(route.params.id, renderSettings.value)
+    console.log('[startRender] API response:', result)
+
+    // Обновляем прогресс после успешного запуска
+    progress.value = 20
+    progressText.value = 'Рендеринг запущен, ожидание обработки...'
+
+    // Запускаем polling для отслеживания статуса
+    pollStatus(route.params.id)
+  } catch (err) {
+    console.error('[startRender] Error:', err)
+    handleError(err, 'startRender')
+    status.value = 'failed'
+    progress.value = 0
+  }
+}
+
+const pollStatus = async (projectId) => {
+  const { start, stop } = usePolling(async () => {
+    try {
+      console.log('[pollStatus] Checking render status for project:', projectId)
+      const result = await getRenderStatus(projectId)
+      console.log('[pollStatus] Render status result:', result)
+
+      // Обновляем статус рендера
+      const renderStatus = result.render_status
+      console.log('[pollStatus] Current render status:', renderStatus)
+
+      // Статусы: 'pending', 'generating_audio', 'rendering_video', 'completed', 'error'
+      if (renderStatus === 'completed') {
+        progress.value = 100
+        progressText.value = 'Готово!'
+
+        console.log('[pollStatus] ===== RENDER COMPLETED =====')
+        console.log('[pollStatus] Full result object:', JSON.stringify(result, null, 2))
+        console.log('[pollStatus] final_video_url from result:', result.final_video_url)
+        console.log('[pollStatus] Type of final_video_url:', typeof result.final_video_url)
+        console.log('[pollStatus] Is null?:', result.final_video_url === null)
+        console.log('[pollStatus] Is undefined?:', result.final_video_url === undefined)
+        console.log('[pollStatus] Is empty string?:', result.final_video_url === '')
+
+        // Устанавливаем URL и статус
+        videoUrl.value = result.final_video_url
+        status.value = 'done'
+
+        console.log('[pollStatus] AFTER SETTING:')
+        console.log('[pollStatus] videoUrl.value:', videoUrl.value)
+        console.log('[pollStatus] status.value:', status.value)
+        console.log('[pollStatus] videoUrl is truthy?:', !!videoUrl.value)
+
+        updateCache()
+        console.log('[pollStatus] Cache updated')
+        console.log('[pollStatus] ==========================')
+
+        // Дополнительная проверка через 100ms
+        setTimeout(() => {
+          console.log('[pollStatus] VERIFICATION after 100ms:')
+          console.log('[pollStatus] videoUrl.value:', videoUrl.value)
+          console.log('[pollStatus] status.value:', status.value)
+        }, 100)
+
+        stop()
+      } else if (renderStatus === 'error') {
+        progress.value = 0
+        error.value = 'Ошибка при рендеринге видео'
+        status.value = 'failed'
+        console.error('[pollStatus] Render failed')
+        stop()
+      } else {
+        status.value = 'processing'
+        // Обновляем прогресс бар в зависимости от статуса
+        if (renderStatus === 'generating_audio') {
+          progress.value = 25
+          progressText.value = 'Генерация озвучки...'
+        } else if (renderStatus === 'rendering_video') {
+          progress.value = 50
+          progressText.value = 'Рендеринг видео... Это может занять 1-2 минуты'
+        }
+        console.log('[pollStatus] Progress:', progress.value, '% -', progressText.value)
+      }
+    } catch (err) {
+      console.error('[pollStatus] Error:', err)
+      handleError(err, 'pollStatus')
+      stop()
+    }
+  }, 3000)
+
+  console.log('[pollStatus] Starting polling...')
+  start()
+}
 
 // Добавь вычисляемое свойство
 const getCurrentBackgroundName = computed(() => {
