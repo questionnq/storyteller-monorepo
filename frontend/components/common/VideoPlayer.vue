@@ -1,17 +1,17 @@
 <template>
-  <div v-if="videoUrl" class="bg-base-200 rounded-lg p-4 shadow-lg">
-    <h3 class="text-lg font-bold mb-3">{{ title }}</h3>
-
-    <!-- DEBUG: Показываем URL -->
-    <div class="mb-3 p-2 bg-base-300 rounded text-xs">
-      <div class="font-semibold mb-1">🔍 Debug: Video URL</div>
-      <div class="break-all opacity-70">{{ videoUrl }}</div>
-    </div>
+  <div v-if="videoUrl" class="bg-slate-800/40 backdrop-blur-sm rounded-xl p-5 border border-slate-700/50 fade-in-up" style="animation-delay: 0.1s">
+    <h3 class="text-lg font-bold text-slate-100 mb-3 flex items-center gap-2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M21 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12l4 4v10a2 2 0 0 1-2 2z" />
+        <path d="M10 10l4 4-4 4" />
+      </svg>
+      {{ title }}
+    </h3>
 
     <!-- Видео плеер -->
     <video
       controls
-      class="w-full max-h-96 bg-black"
+      class="w-full max-h-96 rounded-lg bg-black"
       @error="handleVideoError"
       @loadeddata="handleVideoLoaded"
     >
@@ -20,26 +20,42 @@
     </video>
 
     <!-- Сообщение об ошибке -->
-    <div v-if="videoError" class="alert alert-error mt-3">
-      <span>❌ Ошибка загрузки видео: {{ videoError }}</span>
+    <div v-if="videoError" class="mt-3 p-3 bg-red-500/20 border border-red-500/40 rounded-lg text-red-300">
+      <div class="flex items-center gap-2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <span>{{ videoError }}</span>
+      </div>
     </div>
 
     <!-- Кнопки действий -->
-    <div class="mt-4 flex gap-2">
+    <div class="mt-4 flex gap-2 flex-wrap">
       <a
         :href="videoUrl"
         download="storyboard-video.mp4"
         target="_blank"
-        class="btn btn-primary btn-sm"
+        class="btn btn-van-gogh-primary px-4 py-2 rounded-lg text-sm"
       >
-        📥 Скачать .mp4
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        Скачать .mp4
       </a>
       <a
         :href="videoUrl"
         target="_blank"
-        class="btn btn-outline btn-sm"
+        class="btn btn-van-gogh-outline px-4 py-2 rounded-lg text-sm"
       >
-        🔗 Открыть в новой вкладке
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+          <path d="M10 6h11v11" />
+          <path d="M19 6l-9 9" />
+        </svg>
+        Открыть
       </a>
     </div>
   </div>
@@ -54,26 +70,35 @@ const props = defineProps({
 const videoError = ref(null)
 
 const handleVideoError = (event) => {
-  console.error('[VideoPlayer] Video load error:', event)
-  console.error('[VideoPlayer] Video URL:', props.videoUrl)
-  console.error('[VideoPlayer] Error details:', event.target.error)
-
   if (event.target.error) {
     const errorCode = event.target.error.code
     const errorMessages = {
-      1: 'MEDIA_ERR_ABORTED - Загрузка видео прервана пользователем',
-      2: 'MEDIA_ERR_NETWORK - Ошибка сети при загрузке видео',
-      3: 'MEDIA_ERR_DECODE - Ошибка декодирования видео (возможно поврежден файл)',
-      4: 'MEDIA_ERR_SRC_NOT_SUPPORTED - Формат видео не поддерживается или URL недоступен'
+      1: 'Загрузка прервана',
+      2: 'Ошибка сети',
+      3: 'Ошибка декодирования',
+      4: 'Формат не поддерживается'
     }
-    videoError.value = errorMessages[errorCode] || `Неизвестная ошибка (код: ${errorCode})`
+    videoError.value = errorMessages[errorCode] || `Ошибка ${errorCode}`
   } else {
     videoError.value = 'Не удалось загрузить видео'
   }
 }
 
 const handleVideoLoaded = () => {
-  console.log('[VideoPlayer] Video loaded successfully!')
   videoError.value = null
 }
 </script>
+
+<style scoped>
+.fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+@keyframes fade-in-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
